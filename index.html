@@ -5,7 +5,7 @@
   <title>SUMS Questions - Quiz Application</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  
   <!-- إعداد MathJax لدعم المعادلات الرياضية داخل \( ... \) و $$ ... $$ و \[ ... \] -->
   <script>
     window.MathJax = {
@@ -21,28 +21,11 @@
   <!-- ربط مكتبة MathJax من CDN (نسخة 3) -->
   <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
   
-  <!-- ربط مكتبة jsPDF (إن وُجدت للاستخدام في وظائف أخرى) -->
+  <!-- إضافة مكتبة jsPDF من CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  
-  <!-- هنا لا نحتاج إلى مكتبة خاصة لتحويل الصفحة إلى PDF لأننا سنستخدم وظيفة الطباعة -->
-  
-  <!-- إضافة قواعد CSS خاصة بوضع الطباعة لضمان ظهور كل المحتوى -->
-  <style media="print">
-    html, body {
-      height: auto !important;
-      overflow: visible !important;
-    }
-    .quiz-container {
-      height: auto !important;
-      overflow: visible !important;
-    }
-    /* منع قطع المحتوى داخل عناصر الأسئلة */
-    .question-container {
-      page-break-inside: avoid;
-      page-break-after: always;
-    }
-  </style>
-  
+  <!-- إضافة مكتبة html2canvas من CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
   <style>
     /*================ Reset & Base Styles ================*/
     * {
@@ -475,6 +458,31 @@
       background-color: #c82333;
     }
     
+    /*================ Filters ================*/
+    .filter-button {
+      padding: 12px;
+      margin: 5px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #fff;
+    }
+    .filter-button.correct {
+      background-color: #28a745;
+    }
+    .filter-button.wrong {
+      background-color: #dc3545;
+    }
+    .filter-button.unanswered {
+      background-color: #ffc107;
+      color: black;
+    }
+    .filter-button.all {
+      background-color: #007bff;
+      color: white;
+    }
+    
     /*================ Search Results ================*/
     #search-results {
       max-height: 300px;
@@ -523,21 +531,123 @@
       background-color: yellow;
     }
     
-    /*================ PDF Progress Overlay ================*/
-    #pdf-progress {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 10000;
-      background: rgba(255, 255, 255, 0.95);
-      padding: 20px 30px;
-      border-radius: 8px;
-      text-align: center;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      font-size: 1.1rem;
-      color: #333;
+    /*================ Revert ألوان أزرار Show Unanswered Questions & Show All Questions ================*/
+    .filter-button.unanswered {
+      background-color: #ffc107;
+      color: black;
+    }
+    .filter-button.all {
+      background-color: #007bff;
+      color: white;
+    }
+    
+    /*================ Revert ألوان أزرار MCQs Mode & Flashcard Mode ================*/
+    /* ألوان أزرار Show Answer, Shuffle Options, Clear في MCQs Mode */
+    .show-answer-button {
+      background-color: #28a745;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .show-answer-button:hover {
+      background-color: #218838;
+    }
+    .shuffle-options-button {
+      background-color: #007bff;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .shuffle-options-button:hover {
+      background-color: #0056b3;
+    }
+    .clear-button {
+      background-color: #dc3545;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .clear-button:hover {
+      background-color: #c82333;
+    }
+    
+    /* ألوان أزرار Flashcard Mode: Show Answer & Clear */
+    .flashcard-show-answer-button {
+      background-color: #28a745;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .flashcard-show-answer-button:hover {
+      background-color: #218838;
+    }
+    .flashcard-clear-button {
+      background-color: #dc3545;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .flashcard-clear-button:hover {
+      background-color: #c82333;
+    }
+    
+    /*================ CSS إضافي لأزرار Flashcard Mode في الـ Filters ================*/
+    .filter-button.yes-button {
+      background-color: #28a745;
+      color: white;
+    }
+    .filter-button.no-button {
+      background-color: #dc3545;
+      color: white;
+    }
+    .filter-button.unanswered-button {
+      background-color: #ffc107;
+      color: black;
+    }
+    .filter-button.all-button {
+      background-color: #007bff;
+      color: white;
+    }
+    
+    /*================ Modal (Categories) ================*/
+    .modal-content select {
+      width: 80%;
+      max-width: 300px;
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ced4da;
+      background: #fff;
+      display: block;
+      margin: 0 auto;
+    }
+    .modal-content select:focus {
+      outline: none;
+      border-color: #80bdff;
+      box-shadow: 0 0 3px rgba(0,123,255,.5);
+    }
+    .category-modal-buttons {
+      display: flex;
+      justify-content: center;
+      margin-top: 15px;
+    }
+    .category-modal-buttons button {
+      margin: 0 5px;
     }
   </style>
 </head>
@@ -579,8 +689,11 @@
   <!-- حاوية الكويز (مخفية في البداية) -->
   <div class="quiz-container" id="quiz-container">
     <button id="back-to-topics" type="button" onclick="goBackToTopics()">← Back to Topics</button>
-    <!-- زر الطباعة -->
-    <button id="print-btn" type="button" onclick="printPage()">Print</button>
+    <!-- زر تحميل PDF مضاف بجانب زر Back to Topics -->
+    <button id="download-pdf" type="button" onclick="downloadPDF()">Download PDF</button>
+    <!-- نضع العداد بجانب زر التحميل -->
+    <span id="pdf-progress" style="margin-left:10px; font-weight:bold;"></span>
+
     <h1 id="quiz-title">Quiz Application</h1>
     <p>Total Questions: <strong id="total-questions"></strong></p>
     <div style="display: flex; gap: 10px; margin-bottom: 20px;">
@@ -634,11 +747,6 @@
         <button class="modal-button no" onclick="closeCategoryModal()">Cancel</button>
       </div>
     </div>
-  </div>
-
-  <!-- عنصر عرض حالة تقدم عملية الطباعة (يمكن إخفاؤه إذا لم يكن مطلوباً) -->
-  <div id="pdf-progress">
-    <span id="pdf-progress-text">Processing...</span>
   </div>
 
   <!-- ربط ملف الجافاسكربت الرئيسي -->
