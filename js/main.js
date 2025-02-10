@@ -1024,8 +1024,13 @@ function highlightTerm(text, term) {
  * ميزة تحميل الأسئلة على شكل PDF
  ***/
 function downloadPDF() {
-  // استدعاء طباعة من نافذة علوية top (لضمان العمل في Google Sites)
-  top.window.print();
+  // فتح نافذة جديدة ونسخ محتوى الصفحة كاملاً, ثم الطباعة
+  const popup = window.open('', '_blank', 'width=1000,height=800');
+  popup.document.write('<!DOCTYPE html><html><head>' + document.head.innerHTML + '</head><body>' + document.body.innerHTML + '</body></html>');
+  popup.document.close();
+  popup.focus();
+  popup.print();
+  popup.close();
   return;
 
   // ********* كل ما يلي من الكود يبقى كما هو دون حذف *********
