@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SUMS Questions - Quiz Application</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- إعداد MathJax لدعم المعادلات الرياضية داخل \( ... \) و $$ ... $$ و \[ ... \] -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+  </script>
+  <!-- ربط مكتبة MathJax من CDN (نسخة 3) -->
+  <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  
+  <!-- ربط مكتبة jsPDF (إن وُجدت للاستخدام في وظائف أخرى) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  
+  <!-- هنا لا نحتاج إلى مكتبة خاصة لتحويل الصفحة إلى PDF لأننا سنستخدم وظيفة الطباعة -->
+  
+  <!-- إضافة قواعد CSS خاصة بوضع الطباعة لضمان ظهور كل المحتوى -->
+  <style media="print">
+    html, body {
+      height: auto !important;
+      overflow: visible !important;
+    }
+    .quiz-container {
+      height: auto !important;
+      overflow: visible !important;
+    }
+    /* منع قطع المحتوى داخل عناصر الأسئلة */
+    .question-container {
+      page-break-inside: avoid;
+      page-break-after: always;
+    }
+  </style>
+  
+  <style>
+    /*================ Reset & Base Styles ================*/
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #f3f4f6, #e2e8f0);
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    /*================ Hero Section ================*/
+    .hero-section {
+      position: relative;
+      width: 100%;
+      min-height: 300px;
+      background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+                  url("https://i.imghippo.com/files/jL5279Sg.jpg") no-repeat center center;
+      background-size: cover;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      margin-bottom: 40px;
+    }
+    .hero-section::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      backdrop-filter: blur(4px);
+      z-index: 1;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      color: #fff;
+    }
+    .hero-content h1 {
+      font-size: 3.5rem;
+      margin-bottom: 10px;
+    }
+    .hero-content p {
+      font-size: 1.2rem;
+    }
+    
+    /*================ Topics Page ================*/
+    #topics-page {
+      width: 90%;
+      max-width: 1200px;
+      margin: 0 auto 40px auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .topic-search-bar {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+    .topic-search-bar input {
+      flex: 1;
+      padding: 14px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .topic-search-bar button {
+      padding: 14px 20px;
+      border: none;
+      border-radius: 8px;
+      background-color: #007bff;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .topic-search-bar button:hover {
+      background-color: #0056b3;
+    }
+    .topics-grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    
+    /*--------------- Topic Card (Modern Design) ---------------*/
+    .topic-card {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+    .topic-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+    
+    /*=== آلية ترتيب المواضيع والـ subtopics والوصف ===*/
+    .topic-header {
+      display: flex;
+      flex-direction: column;
+      min-height: 140px;
+    }
+    .topic-title {
+      margin: 0;
+      margin-bottom: 10px;
+      font-size: 1.5rem;
+      color: #343a40;
+      min-height: 60px;
+    }
+    .topic-description {
+      font-size: 1rem;
+      margin-bottom: 15px;
+      color: #555;
+      display: flex;
+      align-items: center;
+    }
+    .subtopics-container {
+      display: flex;
+      flex-direction: column;
+    }
+    .subtopic-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .subtopic-buttons button {
+      padding: 10px;
+      font-size: 15px;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      background-color: #007bff;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .subtopic-buttons button:hover {
+      background-color: #0056b3;
+    }
+    
+    /*================ Quiz Container ================*/
+    .quiz-container {
+      background-color: #fff;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      width: 90%;
+      max-width: 900px;
+      margin: 40px auto;
+      display: none;
+    }
+    #quiz-title {
+      text-align: center;
+      color: #343a40;
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+    
+    /*--------------- Quiz - Questions & Options ---------------*/
+    .question-container {
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #dee2e6;
+      position: relative;
+    }
+    .question {
+      font-size: 1.125rem;
+      margin-bottom: 10px;
+      color: #495057;
+      display: flex;
+      align-items: flex-start;
+    }
+    .question-number {
+      font-weight: bold;
+      margin-right: 10px;
+      color: #000;
+    }
+    .lightbulb-icon {
+      margin-left: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      color: #ffc107;
+    }
+    .explanation {
+      display: none;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      padding: 12px;
+      background-color: #e2e3e5;
+      border-left: 5px solid #6c757d;
+      color: #343a40;
+      border-radius: 5px;
+    }
+    .options-container {
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+    .option {
+      display: flex;
+      align-items: center;
+      background-color: #f8f9fa;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      transition: background-color 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+    }
+    .option:hover {
+      background-color: #e9ecef;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .option input {
+      margin-right: 15px;
+      cursor: pointer;
+    }
+    .option label {
+      flex-grow: 1;
+      cursor: pointer;
+    }
+    .correct {
+      background-color: #28a745 !important;
+      color: white;
+    }
+    .wrong {
+      background-color: #dc3545 !important;
+      color: white;
+    }
+    .unanswered {
+      background-color: #ffc107 !important;
+      color: black;
+    }
+    .correct-answer {
+      background-color: #28a745 !important;
+      color: white;
+      border: 2px solid #28a745;
+    }
+    
+    /*--------------- Quiz Buttons ---------------*/
+    .quiz-container button {
+      margin-top: 15px;
+      margin-right: 5px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: background-color 0.3s, box-shadow 0.3s;
+      cursor: pointer;
+    }
+    #filter-btn {
+      background-color: #007bff;
+      color: #fff;
+    }
+    #filter-btn:hover {
+      background-color: #0056b3;
+    }
+    #switch-mode {
+      background-color: #6f42c1;
+      color: #fff;
+    }
+    #switch-mode:hover {
+      background-color: #5a3791;
+    }
+    #shuffle-questions {
+      background-color: #007bff;
+      color: #fff;
+    }
+    #shuffle-questions:hover {
+      background-color: #0056b3;
+    }
+    #shuffle-options {
+      background-color: #007bff;
+      color: #fff;
+    }
+    #shuffle-options:hover {
+      background-color: #0056b3;
+    }
+    #show-result {
+      background-color: #28a745;
+      color: #fff;
+    }
+    #show-result:hover {
+      background-color: #218838;
+    }
+    #reset-quiz {
+      background-color: #dc3545;
+      color: #fff;
+    }
+    #reset-quiz:hover {
+      background-color: #c82333;
+    }
+    #back-to-topics {
+      background-color: #d3d3d3;
+    }
+    #back-to-top-topics:hover {
+      background-color: #545b62;
+    }
+    #result {
+      font-size: 1rem;
+      margin-top: 20px;
+      text-align: center;
+      color: #343a40;
+    }
+    
+    /*================ Floating Buttons ================*/
+    .floating-button-container {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      z-index: 9999;
+    }
+    .floating-button {
+      background-color: #007bff;
+      color: #fff;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: none;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .floating-button:hover {
+      background-color: #0056b3;
+    }
+    
+    /*================ Modals ================*/
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 200;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.5);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 15% auto;
+      padding: 20px;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .modal-button {
+      padding: 10px 20px;
+      margin: 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .modal-button.yes {
+      background-color: #28a745;
+      color: #fff;
+    }
+    .modal-button.no {
+      background-color: #dc3545;
+      color: #fff;
+    }
+    
+    /*================ Answer Cards ================*/
+    .answer {
+      display: none;
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #e2e3e5;
+      border-left: 5px solid #6c757d;
+      color: #343a40;
+      border-radius: 5px;
+      text-align: left;
+    }
+    .is-correct {
+      margin-top: 10px;
+      font-size: 0.875rem;
+      color: #495057;
+      text-align: left;
+    }
+    .yes-no-group {
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .yes-no-group button {
+      padding: 4px 8px;
+      margin-right: 10px;
+      font-size: 0.75rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .yes-button {
+      background-color: #28a745;
+      color: #fff;
+    }
+    .yes-button:hover {
+      background-color: #218838;
+    }
+    .no-button {
+      background-color: #dc3545;
+      color: #fff;
+    }
+    .no-button:hover {
+      background-color: #c82333;
+    }
+    
+    /*================ Search Results ================*/
+    #search-results {
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 0;
+      list-style-type: none;
+      margin-top: 20px;
+      text-align: left;
+    }
+    #search-results ul {
+      padding: 0;
+      list-style-type: none;
+      margin: 0;
+    }
+    #search-results li {
+      margin: 10px 0;
+    }
+    /* تعديل حجم خانة البحث في زر البحث داخل الأسئلة */
+    #jump-input {
+      width: 350px;
+      height: 30px;
+      font-size: 16px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ced4da;
+    }
+    #jump-input:focus {
+      outline: none;
+      border-color: #80bdff;
+      box-shadow: 0 0 5px rgba(0,123,255,0.5);
+    }
+    #search-results li button {
+      width: 100%;
+      text-align: left;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #f8f9fa;
+      transition: background-color 0.3s;
+    }
+    #search-results li button:hover {
+      background-color: #e9ecef;
+    }
+    #search-results li button mark {
+      background-color: yellow;
+    }
+    
+    /*================ PDF Progress Overlay ================*/
+    #pdf-progress {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10000;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 20px 30px;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      font-size: 1.1rem;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- قسم الهيرو (ترحيبي) -->
+  <div class="hero-section">
+    <div class="hero-content">
+      <h1>Welcome to SUMS Questions Bank (SQB)</h1>
+      <p>Your gateway to comprehensive quizzes and topic exploration!</p>
+    </div>
+  </div>
+
+  <!-- القسم الخاص بعرض المواضيع -->
+  <div id="topics-page">
+    <div class="topic-search-bar">
+      <input type="text" id="topic-search-input" placeholder="Search topics...">
+      <button onclick="manualSearchTopics()">Search</button>
+    </div>
+    <div class="topics-grid" id="topics-grid">
+      <!-- مثال على بطاقة موضوع مع المحاذاة المطلوبة -->
+      <div class="topic-card">
+        <div class="topic-header">
+          <h2 class="topic-title">عنوان الموضوع الأطول هنا</h2>
+          <p class="topic-description">هذا هو الوصف الخاص بالموضوع، والذي يبدأ مباشرة بعد اسم الموضوع بحيث يتم محاذاته مع باقي الأوصاف.</p>
+        </div>
+        <div class="subtopics-container">
+          <div class="subtopic-buttons">
+            <button>فرعي 1</button>
+            <button>فرعي 2</button>
+            <button>فرعي 3</button>
+          </div>
+        </div>
+      </div>
+      <!-- يمكن إضافة المزيد من البطاقات بنفس النمط -->
+    </div>
+  </div>
+
+  <!-- حاوية الكويز (مخفية في البداية) -->
+  <div class="quiz-container" id="quiz-container">
+    <button id="back-to-topics" type="button" onclick="goBackToTopics()">← Back to Topics</button>
+    <!-- زر الطباعة -->
+    <button id="print-btn" type="button" onclick="printPage()">Print</button>
+    <h1 id="quiz-title">Quiz Application</h1>
+    <p>Total Questions: <strong id="total-questions"></strong></p>
+    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+      <button id="filter-btn" onclick="openCategoryModal()">Filter Categories</button>
+      <button id="switch-mode" onclick="switchMode()">Switch to Flashcard Mode</button>
+    </div>
+    <form id="quiz-form"></form>
+    <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+      <button id="shuffle-questions" class="shuffle-questions-button" onclick="shuffleVisibleQuestions()">Shuffle Questions</button>
+      <button id="shuffle-options" class="shuffle-options-button" onclick="shuffleAllOptions()">Shuffle Options</button>
+      <button id="show-result" class="show-answer-button" onclick="showResult()">Show Result</button>
+      <button id="reset-quiz" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+    <div id="result"></div>
+  </div>
+
+  <!-- الأزرار العائمة (تظهر فقط عند الدخول للكويز) -->
+  <div class="floating-button-container" id="floating-buttons">
+    <button id="scroll-button" class="floating-button" onclick="handleScrollButton()" title="Scroll between answered and bottom">↓</button>
+    <button id="jump-button" class="floating-button" onclick="openJumpModal()" title="Search Questions">🔍</button>
+  </div>
+
+  <!-- مودال إعادة التهيئة (Reset) -->
+  <div id="reset-modal" class="modal">
+    <div class="modal-content">
+      <p>Are you sure you want to reset the quiz?</p>
+      <button class="modal-button yes" onclick="confirmResetQuiz()">Yes</button>
+      <button class="modal-button no" onclick="closeResetModal()">No</button>
+    </div>
+  </div>
+
+  <!-- مودال البحث (Jump) للبحث داخل الأسئلة -->
+  <div id="jump-modal" class="modal">
+    <div class="modal-content">
+      <p>Search in currently displayed questions:</p>
+      <input type="text" id="jump-input" placeholder="Enter keyword...">
+      <button class="modal-button" onclick="jumpToQuestion()">Search</button>
+      <button class="modal-button no" onclick="closeJumpModal()">Close</button>
+      <div id="search-results"></div>
+    </div>
+  </div>
+
+  <!-- مودال فلترة الفئات (Categories) -->
+  <div id="category-modal" class="modal">
+    <div class="modal-content">
+      <p>Select Categories:</p>
+      <select id="category-filter" multiple></select>
+      <div class="category-modal-buttons">
+        <button id="select-all-categories-btn" style="padding:8px; font-size:14px; border:none; border-radius:5px; background-color:#007bff; color:#fff;">Select/Unselect All</button>
+        <button class="modal-button yes" onclick="applyCategoryFilter()">OK</button>
+        <button class="modal-button no" onclick="closeCategoryModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- عنصر عرض حالة تقدم عملية الطباعة (يمكن إخفاؤه إذا لم يكن مطلوباً) -->
+  <div id="pdf-progress">
+    <span id="pdf-progress-text">Processing...</span>
+  </div>
+
+  <!-- ربط ملف الجافاسكربت الرئيسي -->
+  <script src="js/main.js"></script>
+
+  <!-- بعد تحميل main.js نترك MathJax يقوم بمعالجة المعادلات تلقائيًا -->
+</body>
+</html>
