@@ -21,11 +21,9 @@
   <!-- ربط مكتبة MathJax من CDN (نسخة 3) -->
   <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
   
-  <!-- إضافة مكتبة jsPDF من CDN -->
+  <!-- إضافة مكتبة jsPDF من CDN لتحميل PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <!-- إضافة مكتبة html2canvas من CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-
+  
   <style>
     /*================ Reset & Base Styles ================*/
     * {
@@ -649,6 +647,18 @@
     .category-modal-buttons button {
       margin: 0 5px;
     }
+
+    /*==========================================*/
+    /*         إضافة شيفرة خاصة بالطباعة       */
+    /*==========================================*/
+    @media print {
+      /* إجبار المتصفح على الحفاظ على الألوان والخلفيات */
+      * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -691,9 +701,6 @@
     <button id="back-to-topics" type="button" onclick="goBackToTopics()">← Back to Topics</button>
     <!-- زر تحميل PDF مضاف بجانب زر Back to Topics -->
     <button id="download-pdf" type="button" onclick="downloadPDF()">Download PDF</button>
-    <!-- نضع العداد بجانب زر التحميل -->
-    <span id="pdf-progress" style="margin-left:10px; font-weight:bold;"></span>
-
     <h1 id="quiz-title">Quiz Application</h1>
     <p>Total Questions: <strong id="total-questions"></strong></p>
     <div style="display: flex; gap: 10px; margin-bottom: 20px;">
