@@ -1021,24 +1021,20 @@ function highlightTerm(text, term) {
 }
 
 /***
- * ميزة تحميل الأسئلة على شكل PDF (محاولة الطباعة عبر IFrame مؤقت)
+ * ميزة تحميل الأسئلة على شكل PDF
  ***/
 function downloadPDF() {
-  // 1) إنشاء IFrame مؤقت في نفس الصفحة
-  const iframe = document.createElement('iframe');
-  iframe.style.position = 'fixed';
-  iframe.style.width = '0';
-  iframe.style.height = '0';
-  iframe.style.border = 'none';
-  document.body.appendChild(iframe);
-  
-  // 2) كتابة محتوى ما نريد طباعته في الـ IFrame (هنا نطبع #quiz-container مثلاً)
-  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  // فتح نافذة "about:blank" جديدة ونسخ المحتوى إليها، ثم الطباعة
+  const printWindow = window.open('about:blank', '_blank', 'width=1000,height=800');
+  if (!printWindow) {
+    alert('Popup blocked! Please allow popups for this site to enable printing.');
+    return;
+  }
   const quizHTML = document.getElementById('quiz-container').outerHTML;
   const quizTitle = document.getElementById('quiz-title') ? document.getElementById('quiz-title').textContent : 'Quiz';
 
-  doc.open();
-  doc.write(`
+  printWindow.document.open();
+  printWindow.document.write(`
     <!DOCTYPE html>
     <html>
     <head>
@@ -1049,48 +1045,41 @@ function downloadPDF() {
       ${quizHTML}
       <script>
         window.onload = function() {
-          window.focus();
           window.print();
+          window.close();
         };
       </script>
     </body>
     </html>
   `);
-  doc.close();
-
-  // 3) عند انتهاء تحميل الـ IFrame، نطبع ثم نزيله
-  iframe.onload = () => {
-    setTimeout(() => {
-      // بعد الطباعة نزيل الإطار
-      document.body.removeChild(iframe);
-    }, 1000);
-  };
+  printWindow.document.close();
+  printWindow.focus();
 
   return;
 
   // ********* كل ما يلي من الكود يبقى كما هو دون حذف *********
   // استخدام jsPDF من مكتبة jspdf.umd
   const { jsPDF } = window.jspdf;
-  const docPDF = new jsPDF();
+  const doc = new jsPDF();
   let y = 20; // موضع البداية عمودياً
   const lineHeight = 10;
   
   // إضافة عنوان الكويز (الموضوع) في أعلى الصفحة وبخط عريض
   const fullQuizTitle = document.getElementById('quiz-title').textContent;
-  docPDF.setFontSize(16);
-  docPDF.setFont("helvetica", "bold");
-  docPDF.text(fullQuizTitle, 105, y, { align: "center" });
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text(fullQuizTitle, 105, y, { align: "center" });
   y += 20;
-  docPDF.setFont("helvetica", "normal");
+  doc.setFont("helvetica", "normal");
   
   // تكرار الأسئلة
   quizData.forEach((data, i) => {
     const questionNumber = i + 1;
     const questionText = stripHTML(data.question);
-    docPDF.setFontSize(12);
+    doc.setFontSize(12);
     const qLine = `${questionNumber}. ${questionText}`;
-    const qLines = docPDF.splitTextToSize(qLine, 180);
-    docPDF.text(qLines, 10, y);
+    const qLines = doc.splitTextToSize(qLine, 180);
+    doc.text(qLines, 10, y);
     y += qLines.length * lineHeight;
     
     // التحقق من وجود خيارات (في وضع MCQ)
@@ -1101,30 +1090,30 @@ function downloadPDF() {
         if (index === data.answer) {
           optionLine += " ***";
         }
-        const optionLines = docPDF.splitTextToSize(optionLine, 180);
+        const optionLines = doc.splitTextToSize(optionLine, 180);
         if (index === data.answer) {
-          docPDF.setFont("helvetica", "bold");
+          doc.setFont("helvetica", "bold");
         } else {
-          docPDF.setFont("helvetica", "normal");
+          doc.setFont("helvetica", "normal");
         }
-        docPDF.text(optionLines, 10, y);
+        doc.text(optionLines, 10, y);
         y += optionLines.length * lineHeight;
       });
     } else if (data.answerText) {
       // في حالة عدم وجود خيارات ولكن يوجد نص للإجابة (Flashcard Mode)
-      docPDF.setFont("helvetica", "bold");
+      doc.setFont("helvetica", "bold");
       const answerLine = `Answer: ${data.answerText}`;
-      const answerLines = docPDF.splitTextToSize(answerLine, 180);
-      docPDF.text(answerLines, 10, y);
+      const answerLines = doc.splitTextToSize(answerLine, 180);
+      doc.text(answerLines, 10, y);
       y += answerLines.length * lineHeight;
-      docPDF.setFont("helvetica", "normal");
+      doc.setFont("helvetica", "normal");
     }
     
     // إضافة الشرح إذا وُجد
     if (data.explanation) {
       const explanationLine = `Explanation: ${data.explanation}`;
-      const explanationLines = docPDF.splitTextToSize(explanationLine, 180);
-      docPDF.text(explanationLines, 10, y);
+      const explanationLines = doc.splitTextToSize(explanationLine, 180);
+      doc.text(explanationLines, 10, y);
       y += explanationLines.length * lineHeight;
     }
     
@@ -1132,10 +1121,10 @@ function downloadPDF() {
     
     // إضافة صفحة جديدة في حال قرب الامتلاء
     if (y > 280) {
-      docPDF.addPage();
+      doc.addPage();
       y = 20;
     }
   });
   
-  docPDF.save(`${fullQuizTitle}.pdf`);
+  doc.save(`${fullQuizTitle}.pdf`);
 }
