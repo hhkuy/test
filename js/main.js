@@ -64,16 +64,20 @@ function displayTopics(topicsArray) {
   topicsArray.forEach(topic => {
     const topicCard = document.createElement('div');
     topicCard.classList.add('topic-card');
+
     const titleEl = document.createElement('h3');
     titleEl.classList.add('topic-title');
     titleEl.textContent = topic.topicName;
     topicCard.appendChild(titleEl);
+
     const descEl = document.createElement('p');
     descEl.classList.add('topic-description');
     descEl.textContent = topic.description ? topic.description : 'No description available.';
     topicCard.appendChild(descEl);
+
     const subtopicContainer = document.createElement('div');
     subtopicContainer.classList.add('subtopic-buttons');
+
     if (!topic.subTopics || topic.subTopics.length === 0) {
       if (topic.file) {
         const btn = document.createElement('button');
@@ -99,6 +103,7 @@ function displayTopics(topicsArray) {
         subtopicContainer.appendChild(btn);
       });
     }
+
     topicCard.appendChild(subtopicContainer);
     topicsGrid.appendChild(topicCard);
   });
@@ -146,17 +151,24 @@ function loadQuestionsJSON(jsonFilePath, quizTitle) {
       quizData = JSON.parse(JSON.stringify(data));
       originalQuizData = JSON.parse(JSON.stringify(data));
       initOriginalCategories();
+
       topicsPage.style.display = 'none';
       quizContainer.style.display = 'block';
       floatingButtons.style.display = 'flex';
+
       quizTitleElement.textContent = quizTitle ? quizTitle : "Quiz Application";
+
       loadQuiz();
+
       categoryFilterSelected = [];
       applyAllFilters();
+
       if (resultElement) resultElement.innerHTML = '';
       scrollState = 0;
       lastAnsweredIndex = -1;
       updateScrollButtonIcon();
+
+      // بعد تحميل الأسئلة، نجعل MathJax يقوم بمعالجة المعادلات
       MathJax.typesetPromise([quizForm]).catch(err => console.error(err));
     })
     .catch(err => console.error('Error loading quiz JSON:', err));
@@ -183,18 +195,24 @@ function initOriginalCategories() {
 function loadQuiz() {
   if (!quizForm) return;
   quizForm.innerHTML = '';
+
   quizData.forEach((data, index) => {
     const questionContainer = document.createElement('div');
     questionContainer.classList.add('question-container');
     questionContainer.id = `question-container-${index}`;
+
+    // عنصر السؤال
     const questionDiv = document.createElement('div');
     questionDiv.classList.add('question');
     questionDiv.id = `question-${index}`;
+
     const questionNumberSpan = document.createElement('span');
     questionNumberSpan.classList.add('question-number');
     questionNumberSpan.textContent = `${index + 1}.`;
+
     const questionTextSpan = document.createElement('span');
-    questionTextSpan.innerHTML = data.question;
+    questionTextSpan.innerHTML = data.question; // قد يحتوي معادلات MathJax وصور
+
     const lightbulbIcon = document.createElement('span');
     lightbulbIcon.classList.add('lightbulb-icon');
     lightbulbIcon.innerHTML = '💡';
@@ -202,36 +220,48 @@ function loadQuiz() {
     lightbulbIcon.addEventListener('click', () => {
       toggleExplanation(index);
     });
+
     questionDiv.appendChild(questionNumberSpan);
     questionDiv.appendChild(questionTextSpan);
     questionDiv.appendChild(lightbulbIcon);
     questionContainer.appendChild(questionDiv);
+
+    // عنصر الشرح
     const explanationDiv = document.createElement('div');
     explanationDiv.classList.add('explanation');
     explanationDiv.id = `explanation-${index}`;
     explanationDiv.textContent = data.explanation || '';
     questionContainer.appendChild(explanationDiv);
+
+    // في وضع MCQ
     if (mode === 'mcq') {
       const optionsContainer = document.createElement('div');
       optionsContainer.classList.add('options-container');
       optionsContainer.id = `options-container-${index}`;
+
       data.options.forEach((option, optionIndex) => {
         const optionDiv = document.createElement('div');
         optionDiv.classList.add('option');
         optionDiv.dataset.index = index;
         optionDiv.dataset.optionIndex = optionIndex;
+
         const radioInput = document.createElement('input');
         radioInput.type = 'radio';
         radioInput.id = `question-${index}-option-${optionIndex}`;
         radioInput.name = `question-${index}`;
         radioInput.value = optionIndex;
-        optionDiv.appendChild(radioInput);
+
         const optionLabel = document.createElement('label');
-        optionLabel.innerHTML = option;
+        optionLabel.innerHTML = option; // قد يحتوي معادلات أو صور
+
+        optionDiv.appendChild(radioInput);
         optionDiv.appendChild(optionLabel);
         optionsContainer.appendChild(optionDiv);
       });
+
       questionContainer.appendChild(optionsContainer);
+
+      // أزرار (Show Answer - Shuffle Options - Clear)
       const showAnswerButton = document.createElement('button');
       showAnswerButton.type = 'button';
       showAnswerButton.textContent = 'Show Answer';
@@ -240,6 +270,7 @@ function loadQuiz() {
         e.stopPropagation();
         showIndividualAnswer(index);
       });
+
       const shuffleOptionsButton = document.createElement('button');
       shuffleOptionsButton.type = 'button';
       shuffleOptionsButton.textContent = 'Shuffle Options';
@@ -248,6 +279,7 @@ function loadQuiz() {
         e.stopPropagation();
         shuffleOptionsForQuestion(index);
       });
+
       const clearButton = document.createElement('button');
       clearButton.type = 'button';
       clearButton.textContent = 'Clear';
@@ -256,14 +288,18 @@ function loadQuiz() {
         e.stopPropagation();
         clearIndividualQuestion(index);
       });
+
       const buttonContainer = document.createElement('div');
       buttonContainer.appendChild(showAnswerButton);
       buttonContainer.appendChild(shuffleOptionsButton);
       buttonContainer.appendChild(clearButton);
       questionContainer.appendChild(buttonContainer);
+
+    // في وضع Flashcard
     } else if (mode === 'flashcard') {
       const buttonGroup = document.createElement('div');
       buttonGroup.classList.add('button-group');
+
       const showAnswerButton = document.createElement('button');
       showAnswerButton.type = 'button';
       showAnswerButton.textContent = 'Show Answer';
@@ -272,6 +308,7 @@ function loadQuiz() {
         e.stopPropagation();
         toggleAnswer(index);
       });
+
       const clearButton = document.createElement('button');
       clearButton.type = 'button';
       clearButton.textContent = 'Clear';
@@ -280,24 +317,30 @@ function loadQuiz() {
         e.stopPropagation();
         clearUserAnswer(index);
       });
+
       const indicator = document.createElement('span');
       indicator.classList.add('indicator');
       indicator.id = `indicator-${index}`;
+
       buttonGroup.appendChild(showAnswerButton);
       buttonGroup.appendChild(clearButton);
       buttonGroup.appendChild(indicator);
       questionContainer.appendChild(buttonGroup);
+
       const answerDiv = document.createElement('div');
       answerDiv.classList.add('answer');
       answerDiv.id = `answer-${index}`;
       answerDiv.textContent = data.answerText ? `Answer: ${data.answerText}` : '';
       questionContainer.appendChild(answerDiv);
+
       const isCorrectDiv = document.createElement('div');
       isCorrectDiv.classList.add('is-correct');
       isCorrectDiv.textContent = 'Is your answer correct?';
       questionContainer.appendChild(isCorrectDiv);
+
       const yesNoGroup = document.createElement('div');
       yesNoGroup.classList.add('yes-no-group');
+
       const yesButton = document.createElement('button');
       yesButton.type = 'button';
       yesButton.textContent = 'Yes';
@@ -306,6 +349,7 @@ function loadQuiz() {
         e.stopPropagation();
         setUserAnswer(index, 'yes');
       });
+
       const noButton = document.createElement('button');
       noButton.type = 'button';
       noButton.textContent = 'No';
@@ -314,17 +358,24 @@ function loadQuiz() {
         e.stopPropagation();
         setUserAnswer(index, 'no');
       });
+
       yesNoGroup.appendChild(yesButton);
       yesNoGroup.appendChild(noButton);
       questionContainer.appendChild(yesNoGroup);
     }
+
     quizForm.appendChild(questionContainer);
   });
+
   document.getElementById('total-questions').textContent = quizData.length;
+
+  // استدعاء MathJax مرة أخرى بعد رسم كامل الأسئلة
   MathJax.typesetPromise([quizForm]).catch(err => console.error(err));
 }
 
-// في وضع MCQ عندما نضغط على أي خيار
+/***********************************************
+ * في وضع MCQ عندما نختار أي خيار
+ ***********************************************/
 if (quizForm) {
   quizForm.addEventListener('click', (event) => {
     const target = event.target;
@@ -357,9 +408,11 @@ function showIndividualAnswer(index) {
   if (mode === 'mcq') {
     const selectedOption = document.querySelector(`input[name="question-${index}"]:checked`);
     const options = document.querySelectorAll(`#options-container-${index} .option`);
+    
     options.forEach(optionDiv => {
       optionDiv.classList.remove('correct', 'wrong', 'correct-answer', 'unanswered');
     });
+
     requestAnimationFrame(() => {
       options.forEach(optionDiv => {
         const input = optionDiv.querySelector('input');
@@ -380,6 +433,7 @@ function showIndividualAnswer(index) {
         }
       });
     });
+
   } else if (mode === 'flashcard') {
     toggleAnswer(index);
   }
@@ -402,37 +456,48 @@ function shuffleOptionsForQuestion(index) {
   const data = quizData[index];
   const optionsContainer = document.getElementById(`options-container-${index}`);
   if (!optionsContainer) return;
+
   const selectedInput = optionsContainer.querySelector('input:checked');
   const selectedOptionIndex = selectedInput ? parseInt(selectedInput.value) : null;
+
   const currentOptions = data.options.map((option, i) => ({ option, index: i }));
   const shuffledOptions = shuffleArray(currentOptions);
+
   data.options = shuffledOptions.map(o => o.option);
   data.answer = shuffledOptions.findIndex(o => o.index === data.answer);
+
   const fragment = document.createDocumentFragment();
+
   data.options.forEach((option, optionIndex) => {
     const optionDiv = document.createElement('div');
     optionDiv.classList.add('option');
     optionDiv.dataset.index = index;
     optionDiv.dataset.optionIndex = optionIndex;
+
     const radioInput = document.createElement('input');
     radioInput.type = 'radio';
     radioInput.id = `question-${index}-option-${optionIndex}`;
     radioInput.name = `question-${index}`;
     radioInput.value = optionIndex;
+
     if (optionIndex === selectedOptionIndex) {
       radioInput.checked = true;
     }
-    optionDiv.appendChild(radioInput);
+
     const optionLabel = document.createElement('label');
     optionLabel.innerHTML = option;
+
+    optionDiv.appendChild(radioInput);
     optionDiv.appendChild(optionLabel);
     fragment.appendChild(optionDiv);
   });
+
   optionsContainer.innerHTML = '';
   optionsContainer.appendChild(fragment);
   optionsContainer.querySelectorAll('.option').forEach(optionDiv => {
     optionDiv.classList.remove('correct', 'wrong', 'correct-answer', 'unanswered');
   });
+
   MathJax.typesetPromise([optionsContainer]).catch(err => console.error(err));
 }
 
@@ -466,18 +531,23 @@ function shuffleAllOptions() {
 function showResult() {
   showAllExplanations();
   const visibleIndexes = getVisibleQuestionIndexes();
+
   let score = 0;
   let unanswered = 0;
   let yesCount = 0;
   let noCount = 0;
+
   if (mode === 'mcq') {
     visibleIndexes.forEach(index => {
       const data = quizData[index];
       const selectedOption = document.querySelector(`input[name="question-${index}"]:checked`);
       const options = document.querySelectorAll(`#options-container-${index} .option`);
+
       options.forEach(optionDiv => {
         optionDiv.classList.remove('correct', 'wrong', 'correct-answer', 'unanswered');
       });
+
+      // تحديد الجواب الصحيح
       options.forEach(optionDiv => {
         const input = optionDiv.querySelector('input');
         const optionIndex = parseInt(input.value);
@@ -485,6 +555,7 @@ function showResult() {
           optionDiv.classList.add('correct-answer');
         }
       });
+
       if (selectedOption) {
         const selectedValue = parseInt(selectedOption.value);
         if (selectedValue === data.answer) {
@@ -500,6 +571,7 @@ function showResult() {
         });
       }
     });
+
     const total = visibleIndexes.length;
     const wrongAnswers = total - score - unanswered;
     resultElement.innerHTML = `
@@ -508,6 +580,7 @@ function showResult() {
       <p>Wrong Answers: ${wrongAnswers}</p>
       <p>Unanswered Questions: ${unanswered}</p>
     `;
+
   } else if (mode === 'flashcard') {
     visibleIndexes.forEach(index => {
       const data = quizData[index];
@@ -523,6 +596,7 @@ function showResult() {
         unanswered++;
       }
     });
+
     const total = visibleIndexes.length;
     resultElement.innerHTML = `
       <p>Your Score:</p>
@@ -532,18 +606,21 @@ function showResult() {
       <p>Total visible Questions: ${total}</p>
     `;
   }
+
   addFilterButtons();
 }
 
 function addFilterButtons() {
   const oldContainer = document.getElementById('filter-container');
   if (oldContainer) oldContainer.remove();
+
   const filterContainer = document.createElement('div');
   filterContainer.id = 'filter-container';
   filterContainer.style.marginTop = '20px';
   filterContainer.style.display = 'flex';
   filterContainer.style.flexWrap = 'wrap';
   filterContainer.style.justifyContent = 'center';
+
   if (mode === 'mcq') {
     const showCorrectButton = document.createElement('button');
     showCorrectButton.textContent = 'Show Correct Answers';
@@ -552,6 +629,7 @@ function addFilterButtons() {
       currentCorrectnessFilter = 'correct';
       applyAllFilters();
     });
+
     const showWrongButton = document.createElement('button');
     showWrongButton.textContent = 'Show Wrong Answers';
     showWrongButton.classList.add('filter-button', 'wrong');
@@ -559,6 +637,7 @@ function addFilterButtons() {
       currentCorrectnessFilter = 'wrong';
       applyAllFilters();
     });
+
     const showUnansweredButton = document.createElement('button');
     showUnansweredButton.textContent = 'Show Unanswered Questions';
     showUnansweredButton.classList.add('filter-button', 'unanswered');
@@ -566,6 +645,7 @@ function addFilterButtons() {
       currentCorrectnessFilter = 'unanswered';
       applyAllFilters();
     });
+
     const showAllButton = document.createElement('button');
     showAllButton.textContent = 'Show All Questions';
     showAllButton.classList.add('filter-button', 'all');
@@ -573,11 +653,14 @@ function addFilterButtons() {
       currentCorrectnessFilter = 'all';
       applyAllFilters();
     });
+
     filterContainer.appendChild(showCorrectButton);
     filterContainer.appendChild(showWrongButton);
     filterContainer.appendChild(showUnansweredButton);
     filterContainer.appendChild(showAllButton);
+
   } else {
+    // وضع الفلاش كارد
     const showCorrectButton = document.createElement('button');
     showCorrectButton.textContent = 'Show Correct Answers';
     showCorrectButton.classList.add('filter-button', 'yes-button');
@@ -585,6 +668,7 @@ function addFilterButtons() {
       currentCorrectnessFilter = 'yes';
       applyAllFilters();
     });
+
     const showIncorrectButton = document.createElement('button');
     showIncorrectButton.textContent = 'Show Incorrect Answers';
     showIncorrectButton.classList.add('filter-button', 'no-button');
@@ -592,6 +676,7 @@ function addFilterButtons() {
       currentCorrectnessFilter = 'no';
       applyAllFilters();
     });
+
     const showUnansweredButton = document.createElement('button');
     showUnansweredButton.textContent = 'Show Unanswered Questions';
     showUnansweredButton.classList.add('filter-button', 'unanswered-button');
@@ -599,6 +684,7 @@ function addFilterButtons() {
       currentCorrectnessFilter = 'unanswered';
       applyAllFilters();
     });
+
     const showAllButton = document.createElement('button');
     showAllButton.textContent = 'Show All Questions';
     showAllButton.classList.add('filter-button', 'all-button');
@@ -606,11 +692,13 @@ function addFilterButtons() {
       currentCorrectnessFilter = 'all';
       applyAllFilters();
     });
+
     filterContainer.appendChild(showCorrectButton);
     filterContainer.appendChild(showIncorrectButton);
     filterContainer.appendChild(showUnansweredButton);
     filterContainer.appendChild(showAllButton);
   }
+
   if (resultElement) {
     resultElement.appendChild(filterContainer);
   }
@@ -618,12 +706,15 @@ function addFilterButtons() {
 
 function filterQuestionsCorrectness() {
   const visibleIndexesAfterCategory = getVisibleQuestionIndexesByCategory();
+
   visibleIndexesAfterCategory.forEach(index => {
     const questionContainer = document.getElementById(`question-container-${index}`);
     let shouldDisplay = false;
+
     if (mode === 'mcq') {
       const selectedOption = document.querySelector(`input[name="question-${index}"]:checked`);
       const data = quizData[index];
+
       if (currentCorrectnessFilter === 'correct') {
         if (selectedOption && parseInt(selectedOption.value) === data.answer) {
           shouldDisplay = true;
@@ -639,9 +730,11 @@ function filterQuestionsCorrectness() {
       } else {
         shouldDisplay = true;
       }
+
     } else {
       const data = quizData[index];
       const ua = data.userAnswer;
+
       if (currentCorrectnessFilter === 'yes') {
         if (ua === 'yes') shouldDisplay = true;
       } else if (currentCorrectnessFilter === 'no') {
@@ -652,23 +745,28 @@ function filterQuestionsCorrectness() {
         shouldDisplay = true;
       }
     }
+
     questionContainer.style.display = shouldDisplay ? 'block' : 'none';
   });
 }
 
 function applyAllFilters() {
   const selectedOptions = categoryFilterSelected || [];
+
   quizData.forEach((data, index) => {
     const questionContainer = document.getElementById(`question-container-${index}`);
     const category = extractCategoryFromQuestion(data.question);
+
     if (selectedOptions.length === 0 || selectedOptions.includes(category)) {
       questionContainer.style.display = 'block';
     } else {
       questionContainer.style.display = 'none';
     }
   });
+
   filterQuestionsCorrectness();
   renumberVisibleQuestions();
+
   const visibleCount = getVisibleQuestionIndexes().length;
   const totalQEl = document.getElementById('total-questions');
   if (totalQEl) totalQEl.textContent = visibleCount;
@@ -707,14 +805,15 @@ function getVisibleQuestionIndexesByCategory() {
   return indexes;
 }
 
+/***********************************************
+ * مودال إعادة التهيئة (Reset)
+ ***********************************************/
 function openResetModal() {
   document.getElementById('reset-modal').style.display = 'block';
 }
-
 function closeResetModal() {
   document.getElementById('reset-modal').style.display = 'none';
 }
-
 function confirmResetQuiz() {
   quizData = JSON.parse(JSON.stringify(originalQuizData));
   loadQuiz();
@@ -729,7 +828,6 @@ function confirmResetQuiz() {
     closeResetModal();
   });
 }
-
 function resetQuiz() {
   openResetModal();
 }
@@ -741,16 +839,15 @@ function openJumpModal() {
   document.getElementById('jump-modal').style.display = 'block';
   document.getElementById('jump-input').focus();
 }
-
 function closeJumpModal() {
   document.getElementById('jump-modal').style.display = 'none';
   clearSearchResults();
 }
-
 function displaySearchResults(results) {
   const searchResultsContainer = document.getElementById('search-results');
   if (!searchResultsContainer) return;
   searchResultsContainer.innerHTML = '';
+
   if (results.length === 0) {
     const noResults = document.createElement('p');
     noResults.textContent = 'No matching questions found.';
@@ -772,25 +869,26 @@ function displaySearchResults(results) {
     MathJax.typesetPromise([searchResultsContainer]).catch(err => console.error(err));
   }
 }
-
 function clearSearchResults() {
   const searchResultsContainer = document.getElementById('search-results');
   if (searchResultsContainer) {
     searchResultsContainer.innerHTML = '';
   }
 }
-
 function jumpToQuestion() {
   const input = document.getElementById('jump-input').value.trim();
   if (input === '') return;
+
   const visibleIndexes = getVisibleQuestionIndexes();
   const results = [];
   const query = input.toLowerCase();
+
   for (let j = 0; j < visibleIndexes.length; j++) {
     const i = visibleIndexes[j];
     const data = quizData[i];
     let matchFound = false;
     let snippet = "";
+
     const questionText = stripHTML(data.question);
     if (questionText.toLowerCase().includes(query)) {
       matchFound = true;
@@ -813,6 +911,8 @@ function jumpToQuestion() {
       });
     }
   }
+
+  // البحث برقم السؤال مباشرة
   if (results.length === 0 && !isNaN(input)) {
     const num = parseInt(input);
     const idx = num - 1;
@@ -823,6 +923,7 @@ function jumpToQuestion() {
       });
     }
   }
+
   displaySearchResults(results);
 }
 
@@ -834,20 +935,17 @@ function toggleAnswer(index) {
   if (!answerDiv) return;
   answerDiv.style.display = (answerDiv.style.display === 'block') ? 'none' : 'block';
 }
-
 function setUserAnswer(index, answer) {
   quizData[index].userAnswer = answer;
   lastAnsweredIndex = index;
   updateScrollButtonIcon();
   updateIndicator(index, answer);
 }
-
 function updateIndicator(index, answer) {
   const indicator = document.getElementById(`indicator-${index}`);
   if (!indicator) return;
   indicator.innerHTML = (answer === 'yes') ? '✔️' : (answer === 'no') ? '❌' : '';
 }
-
 function clearUserAnswer(index) {
   quizData[index].userAnswer = null;
   const indicator = document.getElementById(`indicator-${index}`);
@@ -876,7 +974,7 @@ function extractCategoryFromQuestion(questionHTML) {
 }
 
 /***********************************************
- * زر Select/Unselect All للفئات
+ * زر Select/Unselect All (فئات)
  ***********************************************/
 const selectAllBtn = document.getElementById('select-all-categories-btn');
 if (selectAllBtn) {
@@ -891,7 +989,7 @@ if (selectAllBtn) {
 }
 
 /***********************************************
- * فتح/إغلاق مودال فلترة الفئات
+ * فتح/إغلاق مودال فلترة الفئات (Categories)
  ***********************************************/
 function openCategoryModal() {
   document.getElementById('category-modal').style.display = 'block';
@@ -983,7 +1081,6 @@ function handleScrollButton() {
   }
   updateScrollButtonIcon();
 }
-
 function updateScrollButtonIcon() {
   if (!scrollButton) return;
   if (lastAnsweredIndex === -1) {
@@ -1006,23 +1103,42 @@ function updateScrollButtonIcon() {
 }
 
 /***********************************************
- * دوال مساعدة للنص
+ * ميزة حفظ الصفحة بصور ومعادلاتها (Print -> PDF)
  ***********************************************/
-function stripHTML(html) {
-  let div = document.createElement('div');
-  div.innerHTML = html;
-  return div.textContent || div.innerText || '';
-}
+function downloadPDF() {
+  // نفتح نافذة جديدة تحتوي على نسخة من الـ HTML (مع الصور والرموز)
+  const quizTitle = document.getElementById('quiz-title')?.textContent || 'FullPage';
+  const newWindow = window.open('', '_blank', 'width=1200,height=800');
 
-function highlightTerm(text, term) {
-  const regex = new RegExp(`(${term})`, 'gi');
-  return text.replace(regex, '<mark>$1</mark>');
-}
+  // ننسخ محتوى <html> كامل (أو يمكنك نسخ body فقط)
+  // مع ملاحظة: يفضّل إضافة الـ <base> لضمان تحميل الموارد الخارجية (CSS/صور)
+  const baseTag = `<base href="${document.location.origin}">`;
+  newWindow.document.write(`
+    <html>
+      <head>
+        ${document.head.innerHTML}
+        ${baseTag}
+      </head>
+      <body>
+        ${document.body.innerHTML}
+      </body>
+    </html>
+  `);
+  newWindow.document.title = quizTitle;
 
-/***********************************************
- * وظيفة الطباعة (Print)
- * عند الضغط على زر "Print" يتم استدعاء window.print()
- ***********************************************/
-function printPage() {
-  window.print();
+  // نعطي بعض الوقت لــ MathJax والصور لكي تُحمّل
+  setTimeout(() => {
+    // أو ننتظر MathJax.typesetPromise إن أردت
+    // ... مثلاً:
+    // if (newWindow.MathJax) {
+    //   newWindow.MathJax.typesetPromise().then(() => {
+    //     newWindow.print();
+    //   });
+    // } else {
+    //   newWindow.print();
+    // }
+
+    newWindow.focus();
+    newWindow.print(); // يفتح نافذة الطباعة (المستخدم يختار حفظ PDF)
+  }, 1500);
 }
