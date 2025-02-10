@@ -1024,13 +1024,40 @@ function highlightTerm(text, term) {
  * ميزة تحميل الأسئلة على شكل PDF
  ***/
 function downloadPDF() {
-  // فتح نافذة جديدة ونسخ محتوى الصفحة كاملاً, ثم الطباعة
-  const popup = window.open('', '_blank', 'width=1000,height=800');
-  popup.document.write('<!DOCTYPE html><html><head>' + document.head.innerHTML + '</head><body>' + document.body.innerHTML + '</body></html>');
-  popup.document.close();
-  popup.focus();
-  popup.print();
-  popup.close();
+  // 1) فتح نافذة منبثقة جديدة (Popup)
+  const printWindow = window.open('', '_blank', 'width=1000,height=800');
+  if (!printWindow) {
+    alert('Popup blocked! Please allow popups for this site to enable printing.');
+    return;
+  }
+
+  // 2) جلب محتوى الكويز فقط (أو كامل الصفحة إذا رغبت)
+  const quizContainerHTML = document.getElementById('quiz-container').outerHTML;
+  const quizTitle = document.getElementById('quiz-title') ? document.getElementById('quiz-title').textContent : 'Quiz';
+
+  // 3) كتابة وثيقة HTML جديدة في النافذة المنبثقة
+  printWindow.document.open();
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      ${document.head.innerHTML}
+    </head>
+    <body>
+      <h2 style="text-align:center;">${quizTitle}</h2>
+      ${quizContainerHTML}
+      <script>
+        window.addEventListener('DOMContentLoaded', function() {
+          window.print();
+          window.close();
+        });
+      </script>
+    </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.focus();
+
   return;
 
   // ********* كل ما يلي من الكود يبقى كما هو دون حذف *********
@@ -1041,10 +1068,10 @@ function downloadPDF() {
   const lineHeight = 10;
   
   // إضافة عنوان الكويز (الموضوع) في أعلى الصفحة وبخط عريض
-  const quizTitle = document.getElementById('quiz-title').textContent;
+  const fullQuizTitle = document.getElementById('quiz-title').textContent;
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
-  doc.text(quizTitle, 105, y, { align: "center" });
+  doc.text(fullQuizTitle, 105, y, { align: "center" });
   y += 20;
   doc.setFont("helvetica", "normal");
   
@@ -1102,5 +1129,5 @@ function downloadPDF() {
     }
   });
   
-  doc.save(`${quizTitle}.pdf`);
+  doc.save(`${fullQuizTitle}.pdf`);
 }
