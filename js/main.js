@@ -1024,8 +1024,8 @@ function highlightTerm(text, term) {
  * ميزة تحميل الأسئلة على شكل PDF
  ***/
 function downloadPDF() {
-  // استدعاء طباعة المتصفح مباشرةً
-  window.print();
+  // استدعاء طباعة من نافذة علوية top (لضمان العمل في Google Sites)
+  top.window.print();
   return;
 
   // ********* كل ما يلي من الكود يبقى كما هو دون حذف *********
