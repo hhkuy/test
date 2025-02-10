@@ -659,6 +659,13 @@
         print-color-adjust: exact !important;
       }
     }
+
+    /*------------------------------------------*/
+    /*  إعادة زر ال Download PDF للون البرتقالي  */
+    /*------------------------------------------*/
+    #download-pdf {
+      background-color: orange !important; 
+    }
   </style>
 </head>
 <body>
@@ -699,7 +706,7 @@
   <!-- حاوية الكويز (مخفية في البداية) -->
   <div class="quiz-container" id="quiz-container">
     <button id="back-to-topics" type="button" onclick="goBackToTopics()">← Back to Topics</button>
-    <!-- زر تحميل PDF مضاف بجانب زر Back to Topics -->
+    <!-- زر تحميل PDF برتقالي -->
     <button id="download-pdf" type="button" onclick="downloadPDF()">Download PDF</button>
     <h1 id="quiz-title">Quiz Application</h1>
     <p>Total Questions: <strong id="total-questions"></strong></p>
