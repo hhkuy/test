@@ -227,7 +227,7 @@ function loadQuiz() {
         radioInput.value = optionIndex;
         optionDiv.appendChild(radioInput);
         const optionLabel = document.createElement('label');
-        // استخدم innerHTML بدلاً من textContent للحفاظ على العلامات الرياضية
+        // تغيير من textContent إلى innerHTML للحفاظ على علامات الرياضيات
         optionLabel.innerHTML = option;
         optionDiv.appendChild(optionLabel);
         optionsContainer.appendChild(optionDiv);
@@ -425,7 +425,7 @@ function shuffleOptionsForQuestion(index) {
     }
     optionDiv.appendChild(radioInput);
     const optionLabel = document.createElement('label');
-    // استخدم innerHTML بدلاً من textContent للحفاظ على العلامات الرياضية
+    // استخدم innerHTML بدلاً من textContent للحفاظ على علامات الرياضية
     optionLabel.innerHTML = option;
     optionDiv.appendChild(optionLabel);
     fragment.appendChild(optionDiv);
@@ -767,7 +767,7 @@ function displaySearchResults(results) {
         closeJumpModal();
       });
       listItem.appendChild(resultButton);
-      resultsList.appendChild(listItem);
+      resultsList.appendChild(resultsList);
     });
     searchResultsContainer.appendChild(resultsList);
     MathJax.typesetPromise([searchResultsContainer]).catch(err => console.error(err));
@@ -1024,36 +1024,51 @@ function highlightTerm(text, term) {
  * ميزة تحميل الأسئلة على شكل PDF
  ***/
 function downloadPDF() {
-  // فتح نافذة "about:blank" جديدة دون إغلاقها
+  // 1) فتح نافذة جديدة (about:blank) ولن نغلقها بعد الطباعة
   const printWindow = window.open('about:blank', '_blank', 'width=1000,height=800');
   if (!printWindow) {
     alert('Popup blocked! Please allow popups for this site to enable printing.');
     return;
   }
+
+  // 2) نسخ محتوى الكويز
   const quizHTML = document.getElementById('quiz-container').outerHTML;
   const quizTitle = document.getElementById('quiz-title') ? document.getElementById('quiz-title').textContent : 'Quiz';
 
-  // كتابة نفس الـ HEAD بما فيه تحميل MathJax، لضمان عرض الرموز الرياضية
+  // 3) كتابة HTML في النافذة الجديدة + إعادة تضمين MathJax حتى تظهر الرموز الرياضية
   printWindow.document.open();
   printWindow.document.write(`
     <!DOCTYPE html>
     <html>
     <head>
       ${document.head.innerHTML}
+      <!-- إضافة رابط MathJax (إن لم يعمل async في النافذة الجديدة، يمكن إزالته أو تعديل async) -->
+      <script>
+        window.MathJax = {
+          tex: {
+            inlineMath: [['\\\\(', '\\\\)']],
+            displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']]
+          },
+          svg: {
+            fontCache: 'global'
+          }
+        };
+      </script>
+      <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
     </head>
     <body>
       <h2 style="text-align:center;">${quizTitle}</h2>
       ${quizHTML}
       <script>
+        // عند انتهاء تحميل الصفحة:
         window.onload = function() {
-          // انتظار تحميل MathJax (لو async قد يتأخر قليلاً)
+          // ننتظر حتى يعالج MathJax جميع الرموز
           if (typeof MathJax !== 'undefined') {
             MathJax.typesetPromise().then(() => {
               window.print();
-              // لا نغلق النافذة
             });
           } else {
-            // في حال لم تتوفر MathJax لسبب ما، نطبع مباشرة
+            // احتياطي: إن لم تتوفر MathJax لسبب ما
             window.print();
           }
         };
