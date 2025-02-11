@@ -577,6 +577,7 @@
       background-color: #c82333;
     }
     
+    /* Flashcard Mode أزرار */
     .flashcard-show-answer-button {
       background-color: #28a745;
       color: white;
@@ -601,7 +602,7 @@
     .flashcard-clear-button:hover {
       background-color: #c82333;
     }
-    
+
     .filter-button.yes-button {
       background-color: #28a745;
       color: white;
@@ -618,32 +619,6 @@
       background-color: #007bff;
       color: white;
     }
-    
-    /*================ Modal (Categories) ================*/
-    .modal-content select {
-      width: 80%;
-      max-width: 300px;
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 5px;
-      border: 1px solid #ced4da;
-      background: #fff;
-      display: block;
-      margin: 0 auto;
-    }
-    .modal-content select:focus {
-      outline: none;
-      border-color: #80bdff;
-      box-shadow: 0 0 3px rgba(0,123,255,.5);
-    }
-    .category-modal-buttons {
-      display: flex;
-      justify-content: center;
-      margin-top: 15px;
-    }
-    .category-modal-buttons button {
-      margin: 0 5px;
-    }
 
     @media print {
       * {
@@ -652,6 +627,8 @@
         print-color-adjust: exact !important;
       }
     }
+
+    /* زر التحميل برتقالي */
     #download-pdf {
       background-color: orange !important;
     }
@@ -659,6 +636,7 @@
 </head>
 <body>
 
+  <!-- قسم الهيرو -->
   <div class="hero-section">
     <div class="hero-content">
       <h1>Welcome to SUMS Questions Bank (SQB)</h1>
@@ -666,12 +644,14 @@
     </div>
   </div>
 
+  <!-- قائمة المواضيع -->
   <div id="topics-page">
     <div class="topic-search-bar">
       <input type="text" id="topic-search-input" placeholder="Search topics...">
       <button onclick="manualSearchTopics()">Search</button>
     </div>
     <div class="topics-grid" id="topics-grid">
+      <!-- مثال بطاقة موضوع -->
       <div class="topic-card">
         <div class="topic-header">
           <h2 class="topic-title">عنوان الموضوع الأطول هنا</h2>
@@ -685,9 +665,11 @@
           </div>
         </div>
       </div>
+      <!-- المزيد ... -->
     </div>
   </div>
 
+  <!-- حاوية الكويز -->
   <div class="quiz-container" id="quiz-container">
     <button id="back-to-topics" type="button" onclick="goBackToTopics()">← Back to Topics</button>
     <button id="download-pdf" type="button" onclick="downloadPDF()">Download PDF</button>
@@ -707,11 +689,13 @@
     <div id="result"></div>
   </div>
 
+  <!-- الأزرار العائمة -->
   <div class="floating-button-container" id="floating-buttons">
     <button id="scroll-button" class="floating-button" onclick="handleScrollButton()" title="Scroll between answered and bottom">↓</button>
     <button id="jump-button" class="floating-button" onclick="openJumpModal()" title="Search Questions">🔍</button>
   </div>
 
+  <!-- مودالات (Reset, Jump, Category) -->
   <div id="reset-modal" class="modal">
     <div class="modal-content">
       <p>Are you sure you want to reset the quiz?</p>
@@ -742,6 +726,7 @@
     </div>
   </div>
 
+  <!-- ربط ملف الجافاسكربت -->
   <script src="js/main.js"></script>
 </body>
 </html>
