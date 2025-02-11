@@ -227,7 +227,7 @@ function loadQuiz() {
         radioInput.value = optionIndex;
         optionDiv.appendChild(radioInput);
         const optionLabel = document.createElement('label');
-        optionLabel.innerHTML = option; // للإبقاء على المعادلات
+        optionLabel.innerHTML = option; 
         optionDiv.appendChild(optionLabel);
         optionsContainer.appendChild(optionDiv);
       });
@@ -729,9 +729,6 @@ function resetQuiz() {
   openResetModal();
 }
 
-/***
- * فتح/إغلاق مودال البحث (Jump)
- ***/
 function openJumpModal() {
   document.getElementById('jump-modal').style.display = 'block';
   document.getElementById('jump-input').focus();
@@ -775,9 +772,52 @@ function clearSearchResults() {
   }
 }
 
-/***
- * وضع الفلاشكارد (toggleAnswer, setUserAnswer, ...)
- ***/
+function jumpToQuestion() {
+  const input = document.getElementById('jump-input').value.trim();
+  if (input === '') return;
+  const visibleIndexes = getVisibleQuestionIndexes();
+  const results = [];
+  const query = input.toLowerCase();
+  for (let j = 0; j < visibleIndexes.length; j++) {
+    const i = visibleIndexes[j];
+    const data = quizData[i];
+    let matchFound = false;
+    let snippet = "";
+    const questionText = stripHTML(data.question);
+    if (questionText.toLowerCase().includes(query)) {
+      matchFound = true;
+      snippet = highlightTerm(questionText, input);
+    }
+    if (!matchFound && data.options && Array.isArray(data.options)) {
+      for (let k = 0; k < data.options.length; k++) {
+        const optionText = data.options[k];
+        if (optionText.toLowerCase().includes(query)) {
+          matchFound = true;
+          snippet = highlightTerm(questionText, input) + " (Option: " + highlightTerm(optionText, input) + ")";
+          break;
+        }
+      }
+    }
+    if (matchFound) {
+      results.push({
+        index: i,
+        questionSnippet: snippet
+      });
+    }
+  }
+  if (results.length === 0 && !isNaN(input)) {
+    const num = parseInt(input);
+    const idx = num - 1;
+    if (visibleIndexes.includes(idx)) {
+      results.push({
+        index: idx,
+        questionSnippet: `Question ${num}`
+      });
+    }
+  }
+  displaySearchResults(results);
+}
+
 function toggleAnswer(index) {
   const answerDiv = document.getElementById(`answer-${index}`);
   if (!answerDiv) return;
@@ -833,9 +873,6 @@ if (selectAllBtn) {
   });
 }
 
-/***
- * التحكم في الفئات
- ***/
 function openCategoryModal() {
   document.getElementById('category-modal').style.display = 'block';
   updateCategoryFilter();
@@ -865,9 +902,6 @@ function applyCategoryFilter() {
   applyAllFilters();
 }
 
-/***
- * التحويل بين وضعي MCQ و Flashcard
- ***/
 function switchMode() {
   if (mode === 'mcq') {
     mode = 'flashcard';
@@ -884,9 +918,6 @@ function switchMode() {
   applyAllFilters();
 }
 
-/***
- * إظهار كل الشروحات
- ***/
 function showAllExplanations() {
   const visibleIndexes = getVisibleQuestionIndexes();
   visibleIndexes.forEach(index => {
@@ -897,9 +928,6 @@ function showAllExplanations() {
   });
 }
 
-/***
- * زر التمرير
- ***/
 function handleScrollButton() {
   if (lastAnsweredIndex === -1) {
     if (scrollState === 0 || scrollState === 2) {
@@ -948,67 +976,182 @@ function updateScrollButtonIcon() {
   }
 }
 
+function resetQuiz() {
+  openResetModal();
+}
+
+function openResetModal() {
+  document.getElementById('reset-modal').style.display = 'block';
+}
+
+function closeResetModal() {
+  document.getElementById('reset-modal').style.display = 'none';
+}
+
+function confirmResetQuiz() {
+  quizData = JSON.parse(JSON.stringify(originalQuizData));
+  loadQuiz();
+  requestAnimationFrame(() => {
+    if (resultElement) resultElement.innerHTML = '';
+    scrollState = 0;
+    lastAnsweredIndex = -1;
+    updateScrollButtonIcon();
+    currentCorrectnessFilter = 'all';
+    categoryFilterSelected = [];
+    applyAllFilters();
+    closeResetModal();
+  });
+}
+
+function openJumpModal() {
+  document.getElementById('jump-modal').style.display = 'block';
+  document.getElementById('jump-input').focus();
+}
+
+function closeJumpModal() {
+  document.getElementById('jump-modal').style.display = 'none';
+  clearSearchResults();
+}
+
+function displaySearchResults(results) {
+  const searchResultsContainer = document.getElementById('search-results');
+  if (!searchResultsContainer) return;
+  searchResultsContainer.innerHTML = '';
+  if (results.length === 0) {
+    const noResults = document.createElement('p');
+    noResults.textContent = 'No matching questions found.';
+    searchResultsContainer.appendChild(noResults);
+  } else {
+    const resultsList = document.createElement('ul');
+    results.forEach(result => {
+      const listItem = document.createElement('li');
+      const resultButton = document.createElement('button');
+      resultButton.innerHTML = `Question ${result.index + 1}: ${result.questionSnippet}`;
+      resultButton.addEventListener('click', () => {
+        document.getElementById(`question-${result.index}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
+        closeJumpModal();
+      });
+      listItem.appendChild(resultButton);
+      resultsList.appendChild(listItem);
+    });
+    searchResultsContainer.appendChild(resultsList);
+    MathJax.typesetPromise([searchResultsContainer]).catch(err => console.error(err));
+  }
+}
+
+function clearSearchResults() {
+  const searchResultsContainer = document.getElementById('search-results');
+  if (searchResultsContainer) {
+    searchResultsContainer.innerHTML = '';
+  }
+}
+
+function jumpToQuestion() {
+  const input = document.getElementById('jump-input').value.trim();
+  if (input === '') return;
+  const visibleIndexes = getVisibleQuestionIndexes();
+  const results = [];
+  const query = input.toLowerCase();
+  for (let j = 0; j < visibleIndexes.length; j++) {
+    const i = visibleIndexes[j];
+    const data = quizData[i];
+    let matchFound = false;
+    let snippet = "";
+    const questionText = stripHTML(data.question);
+    if (questionText.toLowerCase().includes(query)) {
+      matchFound = true;
+      snippet = highlightTerm(questionText, input);
+    }
+    if (!matchFound && data.options && Array.isArray(data.options)) {
+      for (let k = 0; k < data.options.length; k++) {
+        const optionText = data.options[k];
+        if (optionText.toLowerCase().includes(query)) {
+          matchFound = true;
+          snippet = highlightTerm(questionText, input) + " (Option: " + highlightTerm(optionText, input) + ")";
+          break;
+        }
+      }
+    }
+    if (matchFound) {
+      results.push({
+        index: i,
+        questionSnippet: snippet
+      });
+    }
+  }
+  if (results.length === 0 && !isNaN(input)) {
+    const num = parseInt(input);
+    const idx = num - 1;
+    if (visibleIndexes.includes(idx)) {
+      results.push({
+        index: idx,
+        questionSnippet: `Question ${num}`
+      });
+    }
+  }
+  displaySearchResults(results);
+}
+
+function stripHTML(html) {
+  let div = document.createElement('div');
+  div.innerHTML = html;
+  return div.textContent || div.innerText || '';
+}
+
+function highlightTerm(text, term) {
+  const regex = new RegExp(`(${term})`, 'gi');
+  return text.replace(regex, '<mark>$1</mark>');
+}
+
 /***
- * === ميزة تحميل PDF ===
+ * ميزة تحميل PDF
  ***/
 function downloadPDF() {
-  // نقرأ العنوان كما هو (الموضوع + الموضوع الفرعي)
+  // اسم الملف (موضوع + موضوع فرعي) من عنصر العنوان
   const quizTitle = document.getElementById('quiz-title') ? document.getElementById('quiz-title').textContent : 'Quiz';
 
-  // فتح نافذة "about:blank" جديدة دون إغلاقها مباشرة
+  // نافذة about:blank مع عدم إغلاقها تلقائيًا
   const printWindow = window.open('about:blank', '_blank', 'width=1000,height=800');
   if (!printWindow) {
     alert('Popup blocked! Please allow popups for this site to enable printing.');
     return;
   }
 
-  // ننسخ الصفحة كاملة
+  // نسخ الصفحة بالكامل
   const fullHTML = '<!DOCTYPE html>\n<html>' + document.documentElement.innerHTML + '\n</html>';
 
   printWindow.document.open();
   printWindow.document.write(fullHTML);
   printWindow.document.close();
 
-  // عند تحميل النافذة
   printWindow.onload = function() {
     if (typeof printWindow.MathJax !== 'undefined') {
       printWindow.MathJax.typesetPromise()
       .then(() => {
         printWindow.focus();
         printWindow.print();
-
-        // بعد انتهاء print (عند إغلاق نافذة الطباعة)، يتم إغلاق النافذة
-        printWindow.onafterprint = () => {
-          printWindow.close();
-        };
-
+        // لا نغلق النافذة
       })
       .catch(() => {
         printWindow.focus();
         printWindow.print();
-        printWindow.onafterprint = () => {
-          printWindow.close();
-        };
+        // لا نغلق النافذة
       });
     } else {
       printWindow.focus();
       printWindow.print();
-      // بعد انتهاء الطباعة
-      printWindow.onafterprint = () => {
-        printWindow.close();
-      };
+      // لا نغلق النافذة
     }
   };
 
   return;
 
-  // ********** بقية كود jsPDF (حفظه بنفس اسم الموضوع والموضوع الفرعي) *********
+  // ********* كود jsPDF (نحفظ بنفس اسم الموضوع والموضوع الفرعي) *********
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   let y = 20;
   const lineHeight = 10;
   
-  // نحفظ باسم quizTitle
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
   doc.text(quizTitle, 105, y, { align: "center" });
@@ -1063,6 +1206,5 @@ function downloadPDF() {
     }
   });
   
-  // حفظ الملف بنفس اسم الموضوع والموضوع الفرعي
   doc.save(`${quizTitle}.pdf`);
 }
