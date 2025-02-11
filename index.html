@@ -540,7 +540,6 @@
     }
     
     /*================ Revert ألوان أزرار MCQs Mode & Flashcard Mode ================*/
-    /* ألوان أزرار Show Answer, Shuffle Options, Clear في MCQs Mode */
     .show-answer-button {
       background-color: #28a745;
       color: white;
@@ -578,7 +577,6 @@
       background-color: #c82333;
     }
     
-    /* ألوان أزرار Flashcard Mode: Show Answer & Clear */
     .flashcard-show-answer-button {
       background-color: #28a745;
       color: white;
@@ -604,7 +602,6 @@
       background-color: #c82333;
     }
     
-    /*================ CSS إضافي لأزرار Flashcard Mode في الـ Filters ================*/
     .filter-button.yes-button {
       background-color: #28a745;
       color: white;
@@ -649,17 +646,12 @@
     }
 
     @media print {
-      /* إجبار المتصفح على الحفاظ على الألوان والخلفيات */
       * {
         -webkit-print-color-adjust: exact !important;
         color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
     }
-
-    /*------------------------------------------*/
-    /*  إعادة لون زر التحميل إلى اللون البرتقالي */
-    /*------------------------------------------*/
     #download-pdf {
       background-color: orange !important;
     }
@@ -667,7 +659,6 @@
 </head>
 <body>
 
-  <!-- قسم الهيرو (ترحيبي) -->
   <div class="hero-section">
     <div class="hero-content">
       <h1>Welcome to SUMS Questions Bank (SQB)</h1>
@@ -675,14 +666,12 @@
     </div>
   </div>
 
-  <!-- القسم الخاص بعرض المواضيع -->
   <div id="topics-page">
     <div class="topic-search-bar">
       <input type="text" id="topic-search-input" placeholder="Search topics...">
       <button onclick="manualSearchTopics()">Search</button>
     </div>
     <div class="topics-grid" id="topics-grid">
-      <!-- مثال على بطاقة موضوع -->
       <div class="topic-card">
         <div class="topic-header">
           <h2 class="topic-title">عنوان الموضوع الأطول هنا</h2>
@@ -696,11 +685,9 @@
           </div>
         </div>
       </div>
-      <!-- المزيد من البطاقات ... -->
     </div>
   </div>
 
-  <!-- حاوية الكويز -->
   <div class="quiz-container" id="quiz-container">
     <button id="back-to-topics" type="button" onclick="goBackToTopics()">← Back to Topics</button>
     <button id="download-pdf" type="button" onclick="downloadPDF()">Download PDF</button>
@@ -720,13 +707,11 @@
     <div id="result"></div>
   </div>
 
-  <!-- الأزرار العائمة (للكويز) -->
   <div class="floating-button-container" id="floating-buttons">
     <button id="scroll-button" class="floating-button" onclick="handleScrollButton()" title="Scroll between answered and bottom">↓</button>
     <button id="jump-button" class="floating-button" onclick="openJumpModal()" title="Search Questions">🔍</button>
   </div>
 
-  <!-- مودال إعادة التهيئة (Reset) -->
   <div id="reset-modal" class="modal">
     <div class="modal-content">
       <p>Are you sure you want to reset the quiz?</p>
@@ -735,7 +720,6 @@
     </div>
   </div>
 
-  <!-- مودال البحث (Jump) -->
   <div id="jump-modal" class="modal">
     <div class="modal-content">
       <p>Search in currently displayed questions:</p>
@@ -746,7 +730,6 @@
     </div>
   </div>
 
-  <!-- مودال فلترة الفئات (Categories) -->
   <div id="category-modal" class="modal">
     <div class="modal-content">
       <p>Select Categories:</p>
@@ -759,9 +742,6 @@
     </div>
   </div>
 
-  <!-- ملف الجافاسكربت الأساسي -->
   <script src="js/main.js"></script>
-
-  <!-- بعد تحميل main.js نترك MathJax يقوم بمعالجة المعادلات تلقائيًا -->
 </body>
 </html>
