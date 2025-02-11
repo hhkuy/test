@@ -1024,7 +1024,7 @@ function highlightTerm(text, term) {
  * ميزة تحميل الأسئلة على شكل PDF
  ***/
 function downloadPDF() {
-  // فتح نافذة "about:blank" جديدة ونسخ المحتوى إليها، ثم الطباعة (بدون إغلاق النافذة)
+  // فتح نافذة "about:blank" جديدة ونسخ المحتوى إليها، ثم الطباعة + الإغلاق بعد 10 ثوان
   const printWindow = window.open('about:blank', '_blank', 'width=1000,height=800');
   if (!printWindow) {
     alert('Popup blocked! Please allow popups for this site to enable printing.');
@@ -1046,7 +1046,10 @@ function downloadPDF() {
       <script>
         window.onload = function() {
           window.print();
-          // لا نقوم بإغلاق النافذة هنا
+          // إغلاق النافذة بعد 10 ثوان
+          setTimeout(function() {
+            window.close();
+          }, 10000);
         };
       </script>
     </body>
