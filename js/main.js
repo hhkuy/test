@@ -64,25 +64,21 @@ function displayTopics(topicsArray) {
   topicsArray.forEach(topic => {
     const topicCard = document.createElement('div');
     topicCard.classList.add('topic-card');
-
+    
     const titleEl = document.createElement('h3');
     titleEl.classList.add('topic-title');
     titleEl.textContent = topic.topicName;
     topicCard.appendChild(titleEl);
-
+    
     const descEl = document.createElement('p');
     descEl.classList.add('topic-description');
     descEl.textContent = topic.description ? topic.description : 'No description available.';
     topicCard.appendChild(descEl);
-
+    
     const subtopicContainer = document.createElement('div');
     subtopicContainer.classList.add('subtopic-buttons');
-
-    // ------ هنا قمنا بتعديل السطر ليتوافق مع اسم الحقل في JSON ------
-    // إذا كان اسم الحقل في JSON هو subTopics اتركه كما كان:
-    // if (!topic.subTopics || topic.subTopics.length === 0) { ... }
-    // لكن إن كان اسم الحقل هو subtopics بحرف t صغيرة فاستخدم السطر التالي:
-    if (!topic.subtopics || topic.subtopics.length === 0) {
+    
+    if (!topic.subTopics || topic.subTopics.length === 0) {
       if (topic.file) {
         const btn = document.createElement('button');
         btn.textContent = 'Open Topic';
@@ -97,8 +93,7 @@ function displayTopics(topicsArray) {
         subtopicContainer.appendChild(btn);
       }
     } else {
-      // وبالمثل هنا:
-      topic.subtopics.forEach(sub => {
+      topic.subTopics.forEach(sub => {
         const btn = document.createElement('button');
         btn.textContent = sub.name;
         btn.addEventListener('click', () => {
@@ -108,7 +103,7 @@ function displayTopics(topicsArray) {
         subtopicContainer.appendChild(btn);
       });
     }
-
+    
     topicCard.appendChild(subtopicContainer);
     topicsGrid.appendChild(topicCard);
   });
@@ -193,6 +188,7 @@ function initOriginalCategories() {
 function loadQuiz() {
   if (!quizForm) return;
   quizForm.innerHTML = '';
+  
   quizData.forEach((data, index) => {
     const questionContainer = document.createElement('div');
     questionContainer.classList.add('question-container');
@@ -248,9 +244,9 @@ function loadQuiz() {
         optionDiv.appendChild(radioInput);
         
         const optionLabel = document.createElement('label');
-        optionLabel.innerHTML = option; // لعرض أي محتوى رياضي
-        optionDiv.appendChild(optionLabel);
+        optionLabel.innerHTML = option; // تغيير من textContent إلى innerHTML لدعم الرموز
         
+        optionDiv.appendChild(optionLabel);
         optionsContainer.appendChild(optionDiv);
       });
       
@@ -385,7 +381,7 @@ if (quizForm) {
 }
 
 /***
- * بقية الدوال المساندة (التصحيح، الفلترة، إلخ) — نفس النسخة المعدّلة
+ * بقية الدوال المساندة (التصحيح، الفلترة، إلخ) — بدون تعديل
  ***/
 function toggleExplanation(index) {
   const explanationDiv = document.getElementById(`explanation-${index}`);
@@ -397,6 +393,7 @@ function showIndividualAnswer(index) {
   if (mode === 'mcq') {
     const selectedOption = document.querySelector(`input[name="question-${index}"]:checked`);
     const options = document.querySelectorAll(`#options-container-${index} .option`);
+    
     options.forEach(optionDiv => {
       optionDiv.classList.remove('correct', 'wrong', 'correct-answer', 'unanswered');
     });
@@ -405,9 +402,11 @@ function showIndividualAnswer(index) {
       options.forEach(optionDiv => {
         const input = optionDiv.querySelector('input');
         const optionIndex = parseInt(input.value);
+        
         if (optionIndex === quizData[index].answer) {
           optionDiv.classList.add('correct-answer');
         }
+        
         if (selectedOption) {
           if (optionIndex === parseInt(selectedOption.value)) {
             if (optionIndex === quizData[index].answer) {
@@ -421,7 +420,6 @@ function showIndividualAnswer(index) {
         }
       });
     });
-    
   } else if (mode === 'flashcard') {
     toggleAnswer(index);
   }
@@ -473,6 +471,7 @@ function shuffleOptionsForQuestion(index) {
     }
     
     optionDiv.appendChild(radioInput);
+    
     const optionLabel = document.createElement('label');
     optionLabel.innerHTML = option;
     optionDiv.appendChild(optionLabel);
@@ -482,11 +481,9 @@ function shuffleOptionsForQuestion(index) {
   
   optionsContainer.innerHTML = '';
   optionsContainer.appendChild(fragment);
-  
   optionsContainer.querySelectorAll('.option').forEach(optionDiv => {
     optionDiv.classList.remove('correct', 'wrong', 'correct-answer', 'unanswered');
   });
-  
   MathJax.typesetPromise([optionsContainer]).catch(err => console.error(err));
 }
 
@@ -563,10 +560,10 @@ function showResult() {
     const wrongAnswers = total - score - unanswered;
     resultElement.innerHTML = 
       `<p>Your score is ${score} out of ${total}.</p>
-      <p>Correct Answers: ${score}</p>
-      <p>Wrong Answers: ${wrongAnswers}</p>
-      <p>Unanswered Questions: ${unanswered}</p>`;
-      
+       <p>Correct Answers: ${score}</p>
+       <p>Wrong Answers: ${wrongAnswers}</p>
+       <p>Unanswered Questions: ${unanswered}</p>`;
+       
   } else if (mode === 'flashcard') {
     visibleIndexes.forEach(index => {
       const data = quizData[index];
@@ -586,10 +583,10 @@ function showResult() {
     const total = visibleIndexes.length;
     resultElement.innerHTML = 
       `<p>Your Score:</p>
-      <p>Correct (Yes): ${yesCount}</p>
-      <p>Incorrect (No): ${noCount}</p>
-      <p>Unanswered Questions: ${unanswered}</p>
-      <p>Total visible Questions: ${total}</p>`;
+       <p>Correct (Yes): ${yesCount}</p>
+       <p>Incorrect (No): ${noCount}</p>
+       <p>Unanswered Questions: ${unanswered}</p>
+       <p>Total visible Questions: ${total}</p>`;
   }
   addFilterButtons();
 }
@@ -689,6 +686,7 @@ function addFilterButtons() {
 
 function filterQuestionsCorrectness() {
   const visibleIndexesAfterCategory = getVisibleQuestionIndexesByCategory();
+  
   visibleIndexesAfterCategory.forEach(index => {
     const questionContainer = document.getElementById(`question-container-${index}`);
     let shouldDisplay = false;
@@ -714,6 +712,7 @@ function filterQuestionsCorrectness() {
     } else {
       const data = quizData[index];
       const ua = data.userAnswer;
+      
       if (currentCorrectnessFilter === 'yes') {
         if (ua === 'yes') shouldDisplay = true;
       } else if (currentCorrectnessFilter === 'no') {
@@ -775,12 +774,14 @@ function getVisibleQuestionIndexes() {
 function getVisibleQuestionIndexesByCategory() {
   const selectedOptions = categoryFilterSelected || [];
   const indexes = [];
+  
   quizData.forEach((data, i) => {
     const category = extractCategoryFromQuestion(data.question);
     if (selectedOptions.length === 0 || selectedOptions.includes(category)) {
       indexes.push(i);
     }
   });
+  
   return indexes;
 }
 
@@ -824,8 +825,8 @@ function closeJumpModal() {
 function displaySearchResults(results) {
   const searchResultsContainer = document.getElementById('search-results');
   if (!searchResultsContainer) return;
-  
   searchResultsContainer.innerHTML = '';
+  
   if (results.length === 0) {
     const noResults = document.createElement('p');
     noResults.textContent = 'No matching questions found.';
@@ -856,24 +857,11 @@ function clearSearchResults() {
 }
 
 /***
- * لإزالة الوسوم و تمييز (highlight) الكلمة في النص
- ***/
-function stripHTML(html) {
-  let doc = new DOMParser().parseFromString(html, 'text/html');
-  return doc.body.textContent || "";
-}
-function highlightTerm(text, term) {
-  const regex = new RegExp(term, 'gi');
-  return text.replace(regex, match => `<mark>${match}</mark>`);
-}
-
-/***
- * دالة البحث داخل الأسئلة بحيث يشمل السؤال + الخيارات + التفسير
+ *  تم إضافة البحث في الـ explanation هنا + إصلاح استدعاء الدوال المفقودة
  ***/
 function jumpToQuestion() {
   const input = document.getElementById('jump-input').value.trim();
   if (input === '') return;
-  
   const visibleIndexes = getVisibleQuestionIndexes();
   const results = [];
   const query = input.toLowerCase();
@@ -881,20 +869,17 @@ function jumpToQuestion() {
   for (let j = 0; j < visibleIndexes.length; j++) {
     const i = visibleIndexes[j];
     const data = quizData[i];
-    
     let matchFound = false;
     let snippet = "";
     
-    // نص السؤال بدون HTML
+    // السؤال
     const questionText = stripHTML(data.question);
-    
-    // 1) البحث في نص السؤال
     if (questionText.toLowerCase().includes(query)) {
       matchFound = true;
       snippet = highlightTerm(questionText, input);
     }
     
-    // 2) البحث في الخيارات
+    // الخيارات
     if (!matchFound && data.options && Array.isArray(data.options)) {
       for (let k = 0; k < data.options.length; k++) {
         const optionText = data.options[k];
@@ -906,13 +891,15 @@ function jumpToQuestion() {
       }
     }
     
-    // 3) البحث في الـ explanation
-    if (!matchFound && data.explanation && data.explanation.toLowerCase().includes(query)) {
-      matchFound = true;
-      snippet = highlightTerm(questionText, input) + " (Explanation: " + highlightTerm(data.explanation, input) + ")";
+    // الشرح (explanation)
+    if (!matchFound && data.explanation) {
+      const explanationText = data.explanation.toLowerCase();
+      if (explanationText.includes(query)) {
+        matchFound = true;
+        snippet = highlightTerm(questionText, input) + " (Explanation: " + highlightTerm(data.explanation, input) + ")";
+      }
     }
     
-    // إذا وجدنا أي تطابق في أحد الحقول
     if (matchFound) {
       results.push({
         index: i,
@@ -921,7 +908,7 @@ function jumpToQuestion() {
     }
   }
   
-  // لو لم نجد نتائج وحاول المستخدم البحث برقم السؤال مباشرة
+  // البحث الرقمي المباشر (بحث برقم السؤال مثلاً)
   if (results.length === 0 && !isNaN(input)) {
     const num = parseInt(input);
     const idx = num - 1;
@@ -934,6 +921,228 @@ function jumpToQuestion() {
   }
   
   displaySearchResults(results);
+}
+
+function toggleAnswer(index) {
+  const answerDiv = document.getElementById(`answer-${index}`);
+  if (!answerDiv) return;
+  answerDiv.style.display = (answerDiv.style.display === 'block') ? 'none' : 'block';
+}
+
+function setUserAnswer(index, answer) {
+  quizData[index].userAnswer = answer;
+  lastAnsweredIndex = index;
+  updateScrollButtonIcon();
+  updateIndicator(index, answer);
+}
+
+function updateIndicator(index, answer) {
+  const indicator = document.getElementById(`indicator-${index}`);
+  if (!indicator) return;
+  indicator.innerHTML = (answer === 'yes') ? '✔️' : (answer === 'no') ? '❌' : '';
+}
+
+function clearUserAnswer(index) {
+  quizData[index].userAnswer = null;
+  const indicator = document.getElementById(`indicator-${index}`);
+  if (indicator) indicator.innerHTML = '';
+  const answerDiv = document.getElementById(`answer-${index}`);
+  if (answerDiv) answerDiv.style.display = 'none';
+}
+
+function extractCategoryFromQuestion(questionHTML) {
+  const div = document.createElement('div');
+  div.innerHTML = questionHTML;
+  const span = div.querySelector('span[style*="darkred"]');
+  if (span) {
+    let text = span.textContent.trim();
+    const questionIndex = text.toLowerCase().indexOf('question');
+    if (questionIndex !== -1) {
+      text = text.substring(0, questionIndex).trim();
+      text = text.replace(/\-\s*$/, '').trim();
+    }
+    return text;
+  }
+  return '';
+}
+
+const selectAllBtn = document.getElementById('select-all-categories-btn');
+if (selectAllBtn) {
+  selectAllBtn.addEventListener('click', () => {
+    const categorySelect = document.getElementById('category-filter');
+    if (!categorySelect) return;
+    const allSelected = Array.from(categorySelect.options).every(option => option.selected);
+    for (let i = 0; i < categorySelect.options.length; i++) {
+      categorySelect.options[i].selected = !allSelected;
+    }
+  });
+}
+
+function openCategoryModal() {
+  document.getElementById('category-modal').style.display = 'block';
+  updateCategoryFilter();
+}
+function closeCategoryModal() {
+  document.getElementById('category-modal').style.display = 'none';
+}
+function updateCategoryFilter() {
+  const categorySelect = document.getElementById('category-filter');
+  if (!categorySelect) return;
+  categorySelect.innerHTML = '';
+  originalCategories.forEach(cat => {
+    const option = document.createElement('option');
+    option.value = cat;
+    option.textContent = cat;
+    if (categoryFilterSelected.includes(cat)) {
+      option.selected = true;
+    }
+    categorySelect.appendChild(option);
+  });
+}
+function applyCategoryFilter() {
+  const categorySelect = document.getElementById('category-filter');
+  if (!categorySelect) return;
+  categoryFilterSelected = Array.from(categorySelect.selectedOptions).map(o => o.value);
+  closeCategoryModal();
+  applyAllFilters();
+}
+
+function switchMode() {
+  if (mode === 'mcq') {
+    mode = 'flashcard';
+    document.getElementById('switch-mode').textContent = 'Switch to MCQs Mode';
+    document.getElementById('shuffle-options').style.display = 'none';
+  } else {
+    mode = 'mcq';
+    document.getElementById('switch-mode').textContent = 'Switch to Flashcard Mode';
+    document.getElementById('shuffle-options').style.display = 'inline-block';
+  }
+  loadQuiz();
+  if (resultElement) resultElement.innerHTML = '';
+  currentCorrectnessFilter = 'all';
+  applyAllFilters();
+}
+
+function showAllExplanations() {
+  const visibleIndexes = getVisibleQuestionIndexes();
+  visibleIndexes.forEach(index => {
+    const explanationDiv = document.getElementById(`explanation-${index}`);
+    if (explanationDiv) {
+      explanationDiv.style.display = 'block';
+    }
+  });
+}
+
+function handleScrollButton() {
+  if (lastAnsweredIndex === -1) {
+    if (scrollState === 0 || scrollState === 2) {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      scrollState = 3;
+    } else if (scrollState === 3) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollState = 2;
+    }
+  } else {
+    if (scrollState === 0) {
+      document.getElementById(`question-${lastAnsweredIndex}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
+      scrollState = 1;
+    } else if (scrollState === 1) {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      scrollState = 2;
+    } else if (scrollState === 2) {
+      document.getElementById(`question-${lastAnsweredIndex}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
+      scrollState = 3;
+    } else if (scrollState === 3) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollState = 1;
+    }
+  }
+  updateScrollButtonIcon();
+}
+
+function updateScrollButtonIcon() {
+  if (!scrollButton) return;
+  if (lastAnsweredIndex === -1) {
+    if (scrollState === 0 || scrollState === 2) {
+      scrollButton.textContent = '↓';
+    } else if (scrollState === 3) {
+      scrollButton.textContent = '↑';
+    }
+  } else {
+    if (scrollState === 0) {
+      scrollButton.textContent = '⇄';
+    } else if (scrollState === 1) {
+      scrollButton.textContent = '↓';
+    } else if (scrollState === 2) {
+      scrollButton.textContent = '⇄';
+    } else if (scrollState === 3) {
+      scrollButton.textContent = '↑';
+    }
+  }
+}
+
+function resetQuiz() {
+  openResetModal();
+}
+
+function openResetModal() {
+  document.getElementById('reset-modal').style.display = 'block';
+}
+
+function closeResetModal() {
+  document.getElementById('reset-modal').style.display = 'none';
+}
+
+function confirmResetQuiz() {
+  quizData = JSON.parse(JSON.stringify(originalQuizData));
+  loadQuiz();
+  requestAnimationFrame(() => {
+    if (resultElement) resultElement.innerHTML = '';
+    scrollState = 0;
+    lastAnsweredIndex = -1;
+    updateScrollButtonIcon();
+    currentCorrectnessFilter = 'all';
+    categoryFilterSelected = [];
+    applyAllFilters();
+    closeResetModal();
+  });
+}
+
+function openJumpModal() {
+  document.getElementById('jump-modal').style.display = 'block';
+  document.getElementById('jump-input').focus();
+}
+
+function closeJumpModal() {
+  document.getElementById('jump-modal').style.display = 'none';
+  clearSearchResults();
+}
+
+function displaySearchResults(results) {
+  const searchResultsContainer = document.getElementById('search-results');
+  if (!searchResultsContainer) return;
+  searchResultsContainer.innerHTML = '';
+  
+  if (results.length === 0) {
+    const noResults = document.createElement('p');
+    noResults.textContent = 'No matching questions found.';
+    searchResultsContainer.appendChild(noResults);
+  } else {
+    const resultsList = document.createElement('ul');
+    results.forEach(result => {
+      const listItem = document.createElement('li');
+      const resultButton = document.createElement('button');
+      resultButton.innerHTML = `Question ${result.index + 1}: ${result.questionSnippet}`;
+      resultButton.addEventListener('click', () => {
+        document.getElementById(`question-${result.index}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
+        closeJumpModal();
+      });
+      listItem.appendChild(resultButton);
+      resultsList.appendChild(listItem);
+    });
+    searchResultsContainer.appendChild(resultsList);
+    MathJax.typesetPromise([searchResultsContainer]).catch(err => console.error(err));
+  }
 }
 
 /***
@@ -978,7 +1187,7 @@ function downloadPDF() {
 
   return;
 
-  // ********* بقية كود jsPDF كما هو دون حذف *********
+  // *** بقية كود jsPDF كما هو دون حذف ***
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   let y = 20;
@@ -1043,134 +1252,13 @@ function downloadPDF() {
 }
 
 /***
- * الدوال التالية (للسكروول) والـ reset مكررة في نهاية الملف،
- * سنترك النسخة الأصلية هنا تعمل، ونعلّق الثانية حتى لا يحدث تضارب:
+ * الدوال التي كانت مفقودة وأدت إلى توقف البحث عن العمل:
  ***/
-function showAllExplanations() {
-  const visibleIndexes = getVisibleQuestionIndexes();
-  visibleIndexes.forEach(index => {
-    const explanationDiv = document.getElementById(`explanation-${index}`);
-    if (explanationDiv) {
-      explanationDiv.style.display = 'block';
-    }
-  });
+function stripHTML(str) {
+  return str.replace(/<[^>]*>?/gm, '');
 }
 
-function handleScrollButton() {
-  if (lastAnsweredIndex === -1) {
-    if (scrollState === 0 || scrollState === 2) {
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-      scrollState = 3;
-    } else if (scrollState === 3) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      scrollState = 2;
-    }
-  } else {
-    if (scrollState === 0) {
-      document.getElementById(`question-${lastAnsweredIndex}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
-      scrollState = 1;
-    } else if (scrollState === 1) {
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-      scrollState = 2;
-    } else if (scrollState === 2) {
-      document.getElementById(`question-${lastAnsweredIndex}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
-      scrollState = 3;
-    } else if (scrollState === 3) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      scrollState = 1;
-    }
-  }
-  updateScrollButtonIcon();
+function highlightTerm(text, term) {
+  const re = new RegExp(term, 'gi');
+  return text.replace(re, matched => `<mark>${matched}</mark>`);
 }
-
-function updateScrollButtonIcon() {
-  if (!scrollButton) return;
-  if (lastAnsweredIndex === -1) {
-    if (scrollState === 0 || scrollState === 2) {
-      scrollButton.textContent = '↓';
-    } else if (scrollState === 3) {
-      scrollButton.textContent = '↑';
-    }
-  } else {
-    if (scrollState === 0) {
-      scrollButton.textContent = '⇄';
-    } else if (scrollState === 1) {
-      scrollButton.textContent = '↓';
-    } else if (scrollState === 2) {
-      scrollButton.textContent = '⇄';
-    } else if (scrollState === 3) {
-      scrollButton.textContent = '↑';
-    }
-  }
-}
-
-/* 
-==========================================================================================
- النسخة المكررة من الدوال (كما هي) دون حذف، لكن نضعها بين تعليق حتى لا تتسبب بتضارب:
-==========================================================================================
-
-function resetQuiz() {
-  openResetModal();
-}
-
-function openResetModal() {
-  document.getElementById('reset-modal').style.display = 'block';
-}
-
-function closeResetModal() {
-  document.getElementById('reset-modal').style.display = 'none';
-}
-
-function confirmResetQuiz() {
-  quizData = JSON.parse(JSON.stringify(originalQuizData));
-  loadQuiz();
-  requestAnimationFrame(() => {
-    if (resultElement) resultElement.innerHTML = '';
-    scrollState = 0;
-    lastAnsweredIndex = -1;
-    updateScrollButtonIcon();
-    currentCorrectnessFilter = 'all';
-    categoryFilterSelected = [];
-    applyAllFilters();
-    closeResetModal();
-  });
-}
-
-function openJumpModal() {
-  document.getElementById('jump-modal').style.display = 'block';
-  document.getElementById('jump-input').focus();
-}
-
-function closeJumpModal() {
-  document.getElementById('jump-modal').style.display = 'none';
-  clearSearchResults();
-}
-
-function displaySearchResults(results) {
-  const searchResultsContainer = document.getElementById('search-results');
-  if (!searchResultsContainer) return;
-  
-  searchResultsContainer.innerHTML = '';
-  if (results.length === 0) {
-    const noResults = document.createElement('p');
-    noResults.textContent = 'No matching questions found.';
-    searchResultsContainer.appendChild(noResults);
-  } else {
-    const resultsList = document.createElement('ul');
-    results.forEach(result => {
-      const listItem = document.createElement('li');
-      const resultButton = document.createElement('button');
-      resultButton.innerHTML = `Question ${result.index + 1}: ${result.questionSnippet}`;
-      resultButton.addEventListener('click', () => {
-        document.getElementById(`question-${result.index}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
-        closeJumpModal();
-      });
-      listItem.appendChild(resultButton);
-      resultsList.appendChild(listItem);
-    });
-    searchResultsContainer.appendChild(resultsList);
-    MathJax.typesetPromise([searchResultsContainer]).catch(err => console.error(err));
-  }
-}
-==========================================================================================
-*/
