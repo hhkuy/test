@@ -64,17 +64,25 @@ function displayTopics(topicsArray) {
   topicsArray.forEach(topic => {
     const topicCard = document.createElement('div');
     topicCard.classList.add('topic-card');
+
     const titleEl = document.createElement('h3');
     titleEl.classList.add('topic-title');
     titleEl.textContent = topic.topicName;
     topicCard.appendChild(titleEl);
+
     const descEl = document.createElement('p');
     descEl.classList.add('topic-description');
     descEl.textContent = topic.description ? topic.description : 'No description available.';
     topicCard.appendChild(descEl);
+
     const subtopicContainer = document.createElement('div');
     subtopicContainer.classList.add('subtopic-buttons');
-    if (!topic.subTopics || topic.subTopics.length === 0) {
+
+    // ------ هنا قمنا بتعديل السطر ليتوافق مع اسم الحقل في JSON ------
+    // إذا كان اسم الحقل في JSON هو subTopics اتركه كما كان:
+    // if (!topic.subTopics || topic.subTopics.length === 0) { ... }
+    // لكن إن كان اسم الحقل هو subtopics بحرف t صغيرة فاستخدم السطر التالي:
+    if (!topic.subtopics || topic.subtopics.length === 0) {
       if (topic.file) {
         const btn = document.createElement('button');
         btn.textContent = 'Open Topic';
@@ -89,7 +97,8 @@ function displayTopics(topicsArray) {
         subtopicContainer.appendChild(btn);
       }
     } else {
-      topic.subTopics.forEach(sub => {
+      // وبالمثل هنا:
+      topic.subtopics.forEach(sub => {
         const btn = document.createElement('button');
         btn.textContent = sub.name;
         btn.addEventListener('click', () => {
@@ -99,6 +108,7 @@ function displayTopics(topicsArray) {
         subtopicContainer.appendChild(btn);
       });
     }
+
     topicCard.appendChild(subtopicContainer);
     topicsGrid.appendChild(topicCard);
   });
@@ -375,7 +385,7 @@ if (quizForm) {
 }
 
 /***
- * بقية الدوال المساندة (التصحيح، الفلترة، إلخ) — بدون تعديل
+ * بقية الدوال المساندة (التصحيح، الفلترة، إلخ) — نفس النسخة المعدّلة
  ***/
 function toggleExplanation(index) {
   const explanationDiv = document.getElementById(`explanation-${index}`);
@@ -846,7 +856,7 @@ function clearSearchResults() {
 }
 
 /***
- * الدالتان التاليتان للمساعدة في إزالة الوسوم و تمييز الكلمة (highlight) في النتائج
+ * لإزالة الوسوم و تمييز (highlight) الكلمة في النص
  ***/
 function stripHTML(html) {
   let doc = new DOMParser().parseFromString(html, 'text/html');
@@ -858,7 +868,7 @@ function highlightTerm(text, term) {
 }
 
 /***
- * هنا دالة البحث داخل الأسئلة (عدّلناها قليلاً لتشمل options + explanation)
+ * دالة البحث داخل الأسئلة بحيث يشمل السؤال + الخيارات + التفسير
  ***/
 function jumpToQuestion() {
   const input = document.getElementById('jump-input').value.trim();
@@ -884,7 +894,7 @@ function jumpToQuestion() {
       snippet = highlightTerm(questionText, input);
     }
     
-    // 2) البحث في الخيارات (إذا لم نجد تطابق في نص السؤال)
+    // 2) البحث في الخيارات
     if (!matchFound && data.options && Array.isArray(data.options)) {
       for (let k = 0; k < data.options.length; k++) {
         const optionText = data.options[k];
@@ -895,15 +905,13 @@ function jumpToQuestion() {
         }
       }
     }
-
-    // ============= [السطران المضافان للبحث في الـ explanation] =============
-    // 3) البحث في حقل التفسير (إن وجد) إذا لم نجد تطابق في السؤال أو الخيارات
+    
+    // 3) البحث في الـ explanation
     if (!matchFound && data.explanation && data.explanation.toLowerCase().includes(query)) {
       matchFound = true;
       snippet = highlightTerm(questionText, input) + " (Explanation: " + highlightTerm(data.explanation, input) + ")";
     }
-    // ==========================================================================
-
+    
     // إذا وجدنا أي تطابق في أحد الحقول
     if (matchFound) {
       results.push({
@@ -1035,7 +1043,8 @@ function downloadPDF() {
 }
 
 /***
- * الدوال التالية (للسكروول) باقية كما هي
+ * الدوال التالية (للسكروول) والـ reset مكررة في نهاية الملف،
+ * سنترك النسخة الأصلية هنا تعمل، ونعلّق الثانية حتى لا يحدث تضارب:
  ***/
 function showAllExplanations() {
   const visibleIndexes = getVisibleQuestionIndexes();
@@ -1094,6 +1103,11 @@ function updateScrollButtonIcon() {
     }
   }
 }
+
+/* 
+==========================================================================================
+ النسخة المكررة من الدوال (كما هي) دون حذف، لكن نضعها بين تعليق حتى لا تتسبب بتضارب:
+==========================================================================================
 
 function resetQuiz() {
   openResetModal();
@@ -1158,3 +1172,5 @@ function displaySearchResults(results) {
     MathJax.typesetPromise([searchResultsContainer]).catch(err => console.error(err));
   }
 }
+==========================================================================================
+*/
