@@ -227,7 +227,7 @@ function loadQuiz() {
         radioInput.value = optionIndex;
         optionDiv.appendChild(radioInput);
         const optionLabel = document.createElement('label');
-        optionLabel.innerHTML = option; 
+        optionLabel.innerHTML = option; // الحفاظ على معادلات الرياضيات إن وجدت
         optionDiv.appendChild(optionLabel);
         optionsContainer.appendChild(optionDiv);
       });
@@ -344,6 +344,9 @@ if (quizForm) {
   });
 }
 
+/***
+ * بقية الدوال...
+ ***/
 function toggleExplanation(index) {
   const explanationDiv = document.getElementById(`explanation-${index}`);
   if (!explanationDiv) return;
@@ -1092,69 +1095,88 @@ function jumpToQuestion() {
   displaySearchResults(results);
 }
 
-function stripHTML(html) {
-  let div = document.createElement('div');
-  div.innerHTML = html;
-  return div.textContent || div.innerText || '';
+/***
+ * وضع الفلاش كارد (الإجابة)
+ ***/
+function toggleAnswer(index) {
+  const answerDiv = document.getElementById(`answer-${index}`);
+  if (!answerDiv) return;
+  answerDiv.style.display = (answerDiv.style.display === 'block') ? 'none' : 'block';
 }
 
-function highlightTerm(text, term) {
-  const regex = new RegExp(`(${term})`, 'gi');
-  return text.replace(regex, '<mark>$1</mark>');
+function setUserAnswer(index, answer) {
+  quizData[index].userAnswer = answer;
+  lastAnsweredIndex = index;
+  updateScrollButtonIcon();
+  updateIndicator(index, answer);
+}
+
+function updateIndicator(index, answer) {
+  const indicator = document.getElementById(`indicator-${index}`);
+  if (!indicator) return;
+  indicator.innerHTML = (answer === 'yes') ? '✔️' : (answer === 'no') ? '❌' : '';
+}
+
+function clearUserAnswer(index) {
+  quizData[index].userAnswer = null;
+  const indicator = document.getElementById(`indicator-${index}`);
+  if (indicator) indicator.innerHTML = '';
+  const answerDiv = document.getElementById(`answer-${index}`);
+  if (answerDiv) answerDiv.style.display = 'none';
 }
 
 /***
- * ميزة تحميل PDF
+ * الدالة المسؤولة عن طباعة صفحة كاملة + كود jsPDF
  ***/
 function downloadPDF() {
-  // اسم الملف (موضوع + موضوع فرعي) من عنصر العنوان
-  const quizTitle = document.getElementById('quiz-title') ? document.getElementById('quiz-title').textContent : 'Quiz';
-
-  // نافذة about:blank مع عدم إغلاقها تلقائيًا
+  // فتح نافذة "about:blank"
   const printWindow = window.open('about:blank', '_blank', 'width=1000,height=800');
   if (!printWindow) {
     alert('Popup blocked! Please allow popups for this site to enable printing.');
     return;
   }
 
-  // نسخ الصفحة بالكامل
+  // انسخ الصفحة كاملة
   const fullHTML = '<!DOCTYPE html>\n<html>' + document.documentElement.innerHTML + '\n</html>';
 
+  // اكتبها في النافذة
   printWindow.document.open();
   printWindow.document.write(fullHTML);
   printWindow.document.close();
 
+  // عند تحميل النافذة
   printWindow.onload = function() {
+    // نعيد تصيير MathJax لو كان موجود
     if (typeof printWindow.MathJax !== 'undefined') {
       printWindow.MathJax.typesetPromise()
       .then(() => {
         printWindow.focus();
         printWindow.print();
-        // لا نغلق النافذة
       })
       .catch(() => {
         printWindow.focus();
         printWindow.print();
-        // لا نغلق النافذة
       });
     } else {
       printWindow.focus();
       printWindow.print();
-      // لا نغلق النافذة
     }
   };
 
   return;
 
-  // ********* كود jsPDF (نحفظ بنفس اسم الموضوع والموضوع الفرعي) *********
+  // ********* بقية كود jsPDF كما هو دون حذف *********
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-  let y = 20;
+  let y = 20; // موضع البداية
   const lineHeight = 10;
   
+  // احصل على عنوان الـQuiz من الصفحة
+  const fullQuizTitle = document.getElementById('quiz-title').textContent;
+
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
-  doc.text(quizTitle, 105, y, { align: "center" });
+  doc.text(fullQuizTitle, 105, y, { align: "center" });
   y += 20;
   doc.setFont("helvetica", "normal");
   
@@ -1206,5 +1228,6 @@ function downloadPDF() {
     }
   });
   
-  doc.save(`${quizTitle}.pdf`);
+  // يحفظ الملف الآن بنفس اسم عنوان الـQuiz المعروض (مثال: "CNS System - Anatomy")
+  doc.save(`${fullQuizTitle}.pdf`);
 }
