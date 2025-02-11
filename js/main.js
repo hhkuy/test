@@ -227,7 +227,7 @@ function loadQuiz() {
         radioInput.value = optionIndex;
         optionDiv.appendChild(radioInput);
         const optionLabel = document.createElement('label');
-        // تغيير من textContent إلى innerHTML للحفاظ على علامات الرياضيات
+        // تغيير من textContent إلى innerHTML حتى تُعرض رموز الرياضيات
         optionLabel.innerHTML = option;
         optionDiv.appendChild(optionLabel);
         optionsContainer.appendChild(optionDiv);
@@ -346,7 +346,7 @@ if (quizForm) {
 }
 
 /***
- * بقية الدوال المساندة (التصحيح، فلترة، إلخ)
+ * بقية الدوال المساندة (التصحيح، الفلترة، إلخ) — بدون تعديل
  ***/
 function toggleExplanation(index) {
   const explanationDiv = document.getElementById(`explanation-${index}`);
@@ -425,7 +425,6 @@ function shuffleOptionsForQuestion(index) {
     }
     optionDiv.appendChild(radioInput);
     const optionLabel = document.createElement('label');
-    // استخدم innerHTML بدلاً من textContent للحفاظ على علامات الرياضية
     optionLabel.innerHTML = option;
     optionDiv.appendChild(optionLabel);
     fragment.appendChild(optionDiv);
@@ -435,7 +434,6 @@ function shuffleOptionsForQuestion(index) {
   optionsContainer.querySelectorAll('.option').forEach(optionDiv => {
     optionDiv.classList.remove('correct', 'wrong', 'correct-answer', 'unanswered');
   });
-  // إعادة استدعاء MathJax لتحويل المعادلات الرياضية داخل الاختيارات بعد الترتيب
   MathJax.typesetPromise([optionsContainer]).catch(err => console.error(err));
 }
 
@@ -735,9 +733,6 @@ function resetQuiz() {
   openResetModal();
 }
 
-/***
- * البحث داخل الأسئلة (مودال jump)
- ***/
 function openJumpModal() {
   document.getElementById('jump-modal').style.display = 'block';
   document.getElementById('jump-input').focus();
@@ -767,7 +762,7 @@ function displaySearchResults(results) {
         closeJumpModal();
       });
       listItem.appendChild(resultButton);
-      resultsList.appendChild(resultsList);
+      resultsList.appendChild(listItem);
     });
     searchResultsContainer.appendChild(resultsList);
     MathJax.typesetPromise([searchResultsContainer]).catch(err => console.error(err));
@@ -827,9 +822,6 @@ function jumpToQuestion() {
   displaySearchResults(results);
 }
 
-/***
- * وضع الفلاش كارد (الإجابة)
- ***/
 function toggleAnswer(index) {
   const answerDiv = document.getElementById(`answer-${index}`);
   if (!answerDiv) return;
@@ -857,9 +849,6 @@ function clearUserAnswer(index) {
   if (answerDiv) answerDiv.style.display = 'none';
 }
 
-/***
- * استخراج الفئة من السؤال (Category)
- ***/
 function extractCategoryFromQuestion(questionHTML) {
   const div = document.createElement('div');
   div.innerHTML = questionHTML;
@@ -876,9 +865,6 @@ function extractCategoryFromQuestion(questionHTML) {
   return '';
 }
 
-/***
- * زر Select/Unselect All للفئات
- ***/
 const selectAllBtn = document.getElementById('select-all-categories-btn');
 if (selectAllBtn) {
   selectAllBtn.addEventListener('click', () => {
@@ -891,9 +877,6 @@ if (selectAllBtn) {
   });
 }
 
-/***
- * فتح/إغلاق مودال فلترة الفئات
- ***/
 function openCategoryModal() {
   document.getElementById('category-modal').style.display = 'block';
   updateCategoryFilter();
@@ -923,9 +906,6 @@ function applyCategoryFilter() {
   applyAllFilters();
 }
 
-/***
- * التحويل بين وضعي MCQ و Flashcard
- ***/
 function switchMode() {
   if (mode === 'mcq') {
     mode = 'flashcard';
@@ -942,9 +922,6 @@ function switchMode() {
   applyAllFilters();
 }
 
-/***
- * إظهار جميع الشروحات
- ***/
 function showAllExplanations() {
   const visibleIndexes = getVisibleQuestionIndexes();
   visibleIndexes.forEach(index => {
@@ -955,9 +932,6 @@ function showAllExplanations() {
   });
 }
 
-/***
- * زر التمرير (Scroll)
- ***/
 function handleScrollButton() {
   if (lastAnsweredIndex === -1) {
     if (scrollState === 0 || scrollState === 2) {
@@ -1006,89 +980,117 @@ function updateScrollButtonIcon() {
   }
 }
 
-/***
- * دوال مساعدة للنص
- ***/
-function stripHTML(html) {
-  let div = document.createElement('div');
-  div.innerHTML = html;
-  return div.textContent || div.innerText || '';
+function resetQuiz() {
+  openResetModal();
 }
 
-function highlightTerm(text, term) {
-  const regex = new RegExp(`(${term})`, 'gi');
-  return text.replace(regex, '<mark>$1</mark>');
+function openResetModal() {
+  document.getElementById('reset-modal').style.display = 'block';
+}
+
+function closeResetModal() {
+  document.getElementById('reset-modal').style.display = 'none';
+}
+
+function confirmResetQuiz() {
+  quizData = JSON.parse(JSON.stringify(originalQuizData));
+  loadQuiz();
+  requestAnimationFrame(() => {
+    if (resultElement) resultElement.innerHTML = '';
+    scrollState = 0;
+    lastAnsweredIndex = -1;
+    updateScrollButtonIcon();
+    currentCorrectnessFilter = 'all';
+    categoryFilterSelected = [];
+    applyAllFilters();
+    closeResetModal();
+  });
+}
+
+function openJumpModal() {
+  document.getElementById('jump-modal').style.display = 'block';
+  document.getElementById('jump-input').focus();
+}
+
+function closeJumpModal() {
+  document.getElementById('jump-modal').style.display = 'none';
+  clearSearchResults();
+}
+
+function displaySearchResults(results) {
+  const searchResultsContainer = document.getElementById('search-results');
+  if (!searchResultsContainer) return;
+  searchResultsContainer.innerHTML = '';
+  if (results.length === 0) {
+    const noResults = document.createElement('p');
+    noResults.textContent = 'No matching questions found.';
+    searchResultsContainer.appendChild(noResults);
+  } else {
+    const resultsList = document.createElement('ul');
+    results.forEach(result => {
+      const listItem = document.createElement('li');
+      const resultButton = document.createElement('button');
+      resultButton.innerHTML = `Question ${result.index + 1}: ${result.questionSnippet}`;
+      resultButton.addEventListener('click', () => {
+        document.getElementById(`question-${result.index}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
+        closeJumpModal();
+      });
+      listItem.appendChild(resultButton);
+      resultsList.appendChild(listItem);
+    });
+    searchResultsContainer.appendChild(resultsList);
+    MathJax.typesetPromise([searchResultsContainer]).catch(err => console.error(err));
+  }
 }
 
 /***
- * ميزة تحميل الأسئلة على شكل PDF
+ * ===== تعديل الدالة ليتم نسخ الصفحة كاملة إلى نافذة about:blank =====
  ***/
 function downloadPDF() {
-  // 1) فتح نافذة جديدة (about:blank) ولن نغلقها بعد الطباعة
+  // افتح نافذة فارغة دون إغلاق
   const printWindow = window.open('about:blank', '_blank', 'width=1000,height=800');
   if (!printWindow) {
     alert('Popup blocked! Please allow popups for this site to enable printing.');
     return;
   }
 
-  // 2) نسخ محتوى الكويز
-  const quizHTML = document.getElementById('quiz-container').outerHTML;
-  const quizTitle = document.getElementById('quiz-title') ? document.getElementById('quiz-title').textContent : 'Quiz';
+  // انسخ الصفحة كاملة (HTML) كما هي:
+  const fullHTML = '<!DOCTYPE html>\n<html>' + document.documentElement.innerHTML + '\n</html>';
 
-  // 3) كتابة HTML في النافذة الجديدة + إعادة تضمين MathJax حتى تظهر الرموز الرياضية
+  // اكتبها في النافذة الجديدة
   printWindow.document.open();
-  printWindow.document.write(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      ${document.head.innerHTML}
-      <!-- إضافة رابط MathJax (إن لم يعمل async في النافذة الجديدة، يمكن إزالته أو تعديل async) -->
-      <script>
-        window.MathJax = {
-          tex: {
-            inlineMath: [['\\\\(', '\\\\)']],
-            displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']]
-          },
-          svg: {
-            fontCache: 'global'
-          }
-        };
-      </script>
-      <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
-    </head>
-    <body>
-      <h2 style="text-align:center;">${quizTitle}</h2>
-      ${quizHTML}
-      <script>
-        // عند انتهاء تحميل الصفحة:
-        window.onload = function() {
-          // ننتظر حتى يعالج MathJax جميع الرموز
-          if (typeof MathJax !== 'undefined') {
-            MathJax.typesetPromise().then(() => {
-              window.print();
-            });
-          } else {
-            // احتياطي: إن لم تتوفر MathJax لسبب ما
-            window.print();
-          }
-        };
-      </script>
-    </body>
-    </html>
-  `);
+  printWindow.document.write(fullHTML);
   printWindow.document.close();
-  printWindow.focus();
+
+  // عند انتهاء تحميل النافذة الجديدة
+  printWindow.onload = function() {
+    // نحاول إعادة تصيير MathJax في النافذة المنبثقة (إن كانت محملة)
+    if (typeof printWindow.MathJax !== 'undefined') {
+      printWindow.MathJax.typesetPromise()
+      .then(() => {
+        printWindow.focus();
+        printWindow.print();
+      })
+      .catch(() => {
+        // احتياطًا
+        printWindow.focus();
+        printWindow.print();
+      });
+    } else {
+      // لو لسبب ما لم تُحمّل MathJax
+      printWindow.focus();
+      printWindow.print();
+    }
+  };
 
   return;
 
-  // ********* كل ما يلي من الكود يبقى كما هو دون حذف *********
-  // استخدام jsPDF من مكتبة jspdf.umd
+  // ********* بقية كود jsPDF كما هو دون حذف *********
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
-  let y = 20; // موضع البداية عمودياً
+  let y = 20;
   const lineHeight = 10;
   
-  // إضافة عنوان الكويز (الموضوع) في أعلى الصفحة وبخط عريض
   const fullQuizTitle = document.getElementById('quiz-title').textContent;
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
@@ -1096,7 +1098,6 @@ function downloadPDF() {
   y += 20;
   doc.setFont("helvetica", "normal");
   
-  // تكرار الأسئلة
   quizData.forEach((data, i) => {
     const questionNumber = i + 1;
     const questionText = stripHTML(data.question);
@@ -1106,7 +1107,6 @@ function downloadPDF() {
     doc.text(qLines, 10, y);
     y += qLines.length * lineHeight;
     
-    // التحقق من وجود خيارات (في وضع MCQ)
     if (data.options && Array.isArray(data.options)) {
       const optionLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
       data.options.forEach((option, index) => {
@@ -1124,7 +1124,6 @@ function downloadPDF() {
         y += optionLines.length * lineHeight;
       });
     } else if (data.answerText) {
-      // في حالة عدم وجود خيارات ولكن يوجد نص للإجابة (Flashcard Mode)
       doc.setFont("helvetica", "bold");
       const answerLine = `Answer: ${data.answerText}`;
       const answerLines = doc.splitTextToSize(answerLine, 180);
@@ -1133,7 +1132,6 @@ function downloadPDF() {
       doc.setFont("helvetica", "normal");
     }
     
-    // إضافة الشرح إذا وُجد
     if (data.explanation) {
       const explanationLine = `Explanation: ${data.explanation}`;
       const explanationLines = doc.splitTextToSize(explanationLine, 180);
@@ -1141,9 +1139,7 @@ function downloadPDF() {
       y += explanationLines.length * lineHeight;
     }
     
-    y += 5; // مسافة إضافية بين الأسئلة
-    
-    // إضافة صفحة جديدة في حال قرب الامتلاء
+    y += 5;
     if (y > 280) {
       doc.addPage();
       y = 20;
