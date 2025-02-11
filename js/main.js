@@ -1024,7 +1024,7 @@ function highlightTerm(text, term) {
  * ميزة تحميل الأسئلة على شكل PDF
  ***/
 function downloadPDF() {
-  // فتح نافذة "about:blank" جديدة ونسخ المحتوى إليها، ثم الطباعة (بدون إغلاق النافذة)
+  // فتح نافذة "about:blank" جديدة دون إغلاقها
   const printWindow = window.open('about:blank', '_blank', 'width=1000,height=800');
   if (!printWindow) {
     alert('Popup blocked! Please allow popups for this site to enable printing.');
@@ -1033,6 +1033,7 @@ function downloadPDF() {
   const quizHTML = document.getElementById('quiz-container').outerHTML;
   const quizTitle = document.getElementById('quiz-title') ? document.getElementById('quiz-title').textContent : 'Quiz';
 
+  // كتابة نفس الـ HEAD بما فيه تحميل MathJax، لضمان عرض الرموز الرياضية
   printWindow.document.open();
   printWindow.document.write(`
     <!DOCTYPE html>
@@ -1045,8 +1046,16 @@ function downloadPDF() {
       ${quizHTML}
       <script>
         window.onload = function() {
-          window.print();
-          // لا نقوم بإغلاق النافذة هنا
+          // انتظار تحميل MathJax (لو async قد يتأخر قليلاً)
+          if (typeof MathJax !== 'undefined') {
+            MathJax.typesetPromise().then(() => {
+              window.print();
+              // لا نغلق النافذة
+            });
+          } else {
+            // في حال لم تتوفر MathJax لسبب ما، نطبع مباشرة
+            window.print();
+          }
         };
       </script>
     </body>
