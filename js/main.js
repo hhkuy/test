@@ -187,14 +187,18 @@ function loadQuiz() {
     const questionContainer = document.createElement('div');
     questionContainer.classList.add('question-container');
     questionContainer.id = `question-container-${index}`;
+    
     const questionDiv = document.createElement('div');
     questionDiv.classList.add('question');
     questionDiv.id = `question-${index}`;
+    
     const questionNumberSpan = document.createElement('span');
     questionNumberSpan.classList.add('question-number');
     questionNumberSpan.textContent = `${index + 1}.`;
+    
     const questionTextSpan = document.createElement('span');
     questionTextSpan.innerHTML = data.question;
+    
     const lightbulbIcon = document.createElement('span');
     lightbulbIcon.classList.add('lightbulb-icon');
     lightbulbIcon.innerHTML = '💡';
@@ -202,37 +206,46 @@ function loadQuiz() {
     lightbulbIcon.addEventListener('click', () => {
       toggleExplanation(index);
     });
+    
     questionDiv.appendChild(questionNumberSpan);
     questionDiv.appendChild(questionTextSpan);
     questionDiv.appendChild(lightbulbIcon);
     questionContainer.appendChild(questionDiv);
+    
     const explanationDiv = document.createElement('div');
     explanationDiv.classList.add('explanation');
     explanationDiv.id = `explanation-${index}`;
     explanationDiv.textContent = data.explanation || '';
     questionContainer.appendChild(explanationDiv);
+    
     if (mode === 'mcq') {
       const optionsContainer = document.createElement('div');
       optionsContainer.classList.add('options-container');
       optionsContainer.id = `options-container-${index}`;
+      
       data.options.forEach((option, optionIndex) => {
         const optionDiv = document.createElement('div');
         optionDiv.classList.add('option');
         optionDiv.dataset.index = index;
         optionDiv.dataset.optionIndex = optionIndex;
+        
         const radioInput = document.createElement('input');
         radioInput.type = 'radio';
         radioInput.id = `question-${index}-option-${optionIndex}`;
         radioInput.name = `question-${index}`;
         radioInput.value = optionIndex;
+        
         optionDiv.appendChild(radioInput);
+        
         const optionLabel = document.createElement('label');
-        // تغيير من textContent إلى innerHTML حتى تُعرض رموز الرياضيات
-        optionLabel.innerHTML = option;
+        optionLabel.innerHTML = option; // لعرض أي محتوى رياضي
         optionDiv.appendChild(optionLabel);
+        
         optionsContainer.appendChild(optionDiv);
       });
+      
       questionContainer.appendChild(optionsContainer);
+      
       const showAnswerButton = document.createElement('button');
       showAnswerButton.type = 'button';
       showAnswerButton.textContent = 'Show Answer';
@@ -241,6 +254,7 @@ function loadQuiz() {
         e.stopPropagation();
         showIndividualAnswer(index);
       });
+      
       const shuffleOptionsButton = document.createElement('button');
       shuffleOptionsButton.type = 'button';
       shuffleOptionsButton.textContent = 'Shuffle Options';
@@ -249,6 +263,7 @@ function loadQuiz() {
         e.stopPropagation();
         shuffleOptionsForQuestion(index);
       });
+      
       const clearButton = document.createElement('button');
       clearButton.type = 'button';
       clearButton.textContent = 'Clear';
@@ -257,14 +272,17 @@ function loadQuiz() {
         e.stopPropagation();
         clearIndividualQuestion(index);
       });
+      
       const buttonContainer = document.createElement('div');
       buttonContainer.appendChild(showAnswerButton);
       buttonContainer.appendChild(shuffleOptionsButton);
       buttonContainer.appendChild(clearButton);
       questionContainer.appendChild(buttonContainer);
+      
     } else if (mode === 'flashcard') {
       const buttonGroup = document.createElement('div');
       buttonGroup.classList.add('button-group');
+      
       const showAnswerButton = document.createElement('button');
       showAnswerButton.type = 'button';
       showAnswerButton.textContent = 'Show Answer';
@@ -273,6 +291,7 @@ function loadQuiz() {
         e.stopPropagation();
         toggleAnswer(index);
       });
+      
       const clearButton = document.createElement('button');
       clearButton.type = 'button';
       clearButton.textContent = 'Clear';
@@ -281,24 +300,30 @@ function loadQuiz() {
         e.stopPropagation();
         clearUserAnswer(index);
       });
+      
       const indicator = document.createElement('span');
       indicator.classList.add('indicator');
       indicator.id = `indicator-${index}`;
+      
       buttonGroup.appendChild(showAnswerButton);
       buttonGroup.appendChild(clearButton);
       buttonGroup.appendChild(indicator);
       questionContainer.appendChild(buttonGroup);
+      
       const answerDiv = document.createElement('div');
       answerDiv.classList.add('answer');
       answerDiv.id = `answer-${index}`;
       answerDiv.textContent = data.answerText ? `Answer: ${data.answerText}` : '';
       questionContainer.appendChild(answerDiv);
+      
       const isCorrectDiv = document.createElement('div');
       isCorrectDiv.classList.add('is-correct');
       isCorrectDiv.textContent = 'Is your answer correct?';
       questionContainer.appendChild(isCorrectDiv);
+      
       const yesNoGroup = document.createElement('div');
       yesNoGroup.classList.add('yes-no-group');
+      
       const yesButton = document.createElement('button');
       yesButton.type = 'button';
       yesButton.textContent = 'Yes';
@@ -307,6 +332,7 @@ function loadQuiz() {
         e.stopPropagation();
         setUserAnswer(index, 'yes');
       });
+      
       const noButton = document.createElement('button');
       noButton.type = 'button';
       noButton.textContent = 'No';
@@ -315,12 +341,15 @@ function loadQuiz() {
         e.stopPropagation();
         setUserAnswer(index, 'no');
       });
+      
       yesNoGroup.appendChild(yesButton);
       yesNoGroup.appendChild(noButton);
       questionContainer.appendChild(yesNoGroup);
     }
+    
     quizForm.appendChild(questionContainer);
   });
+  
   document.getElementById('total-questions').textContent = quizData.length;
   MathJax.typesetPromise([quizForm]).catch(err => console.error(err));
 }
@@ -361,6 +390,7 @@ function showIndividualAnswer(index) {
     options.forEach(optionDiv => {
       optionDiv.classList.remove('correct', 'wrong', 'correct-answer', 'unanswered');
     });
+    
     requestAnimationFrame(() => {
       options.forEach(optionDiv => {
         const input = optionDiv.querySelector('input');
@@ -381,6 +411,7 @@ function showIndividualAnswer(index) {
         }
       });
     });
+    
   } else if (mode === 'flashcard') {
     toggleAnswer(index);
   }
@@ -403,37 +434,49 @@ function shuffleOptionsForQuestion(index) {
   const data = quizData[index];
   const optionsContainer = document.getElementById(`options-container-${index}`);
   if (!optionsContainer) return;
+  
   const selectedInput = optionsContainer.querySelector('input:checked');
   const selectedOptionIndex = selectedInput ? parseInt(selectedInput.value) : null;
+  
   const currentOptions = data.options.map((option, i) => ({ option, index: i }));
   const shuffledOptions = shuffleArray(currentOptions);
+  
   data.options = shuffledOptions.map(o => o.option);
   data.answer = shuffledOptions.findIndex(o => o.index === data.answer);
+  
   const fragment = document.createDocumentFragment();
+  
   data.options.forEach((option, optionIndex) => {
     const optionDiv = document.createElement('div');
     optionDiv.classList.add('option');
     optionDiv.dataset.index = index;
     optionDiv.dataset.optionIndex = optionIndex;
+    
     const radioInput = document.createElement('input');
     radioInput.type = 'radio';
     radioInput.id = `question-${index}-option-${optionIndex}`;
     radioInput.name = `question-${index}`;
     radioInput.value = optionIndex;
+    
     if (optionIndex === selectedOptionIndex) {
       radioInput.checked = true;
     }
+    
     optionDiv.appendChild(radioInput);
     const optionLabel = document.createElement('label');
     optionLabel.innerHTML = option;
     optionDiv.appendChild(optionLabel);
+    
     fragment.appendChild(optionDiv);
   });
+  
   optionsContainer.innerHTML = '';
   optionsContainer.appendChild(fragment);
+  
   optionsContainer.querySelectorAll('.option').forEach(optionDiv => {
     optionDiv.classList.remove('correct', 'wrong', 'correct-answer', 'unanswered');
   });
+  
   MathJax.typesetPromise([optionsContainer]).catch(err => console.error(err));
 }
 
@@ -471,14 +514,17 @@ function showResult() {
   let unanswered = 0;
   let yesCount = 0;
   let noCount = 0;
+  
   if (mode === 'mcq') {
     visibleIndexes.forEach(index => {
       const data = quizData[index];
       const selectedOption = document.querySelector(`input[name="question-${index}"]:checked`);
       const options = document.querySelectorAll(`#options-container-${index} .option`);
+      
       options.forEach(optionDiv => {
         optionDiv.classList.remove('correct', 'wrong', 'correct-answer', 'unanswered');
       });
+      
       options.forEach(optionDiv => {
         const input = optionDiv.querySelector('input');
         const optionIndex = parseInt(input.value);
@@ -486,6 +532,7 @@ function showResult() {
           optionDiv.classList.add('correct-answer');
         }
       });
+      
       if (selectedOption) {
         const selectedValue = parseInt(selectedOption.value);
         if (selectedValue === data.answer) {
@@ -501,6 +548,7 @@ function showResult() {
         });
       }
     });
+    
     const total = visibleIndexes.length;
     const wrongAnswers = total - score - unanswered;
     resultElement.innerHTML = 
@@ -508,6 +556,7 @@ function showResult() {
       <p>Correct Answers: ${score}</p>
       <p>Wrong Answers: ${wrongAnswers}</p>
       <p>Unanswered Questions: ${unanswered}</p>`;
+      
   } else if (mode === 'flashcard') {
     visibleIndexes.forEach(index => {
       const data = quizData[index];
@@ -523,6 +572,7 @@ function showResult() {
         unanswered++;
       }
     });
+    
     const total = visibleIndexes.length;
     resultElement.innerHTML = 
       `<p>Your Score:</p>
@@ -537,12 +587,14 @@ function showResult() {
 function addFilterButtons() {
   const oldContainer = document.getElementById('filter-container');
   if (oldContainer) oldContainer.remove();
+  
   const filterContainer = document.createElement('div');
   filterContainer.id = 'filter-container';
   filterContainer.style.marginTop = '20px';
   filterContainer.style.display = 'flex';
   filterContainer.style.flexWrap = 'wrap';
   filterContainer.style.justifyContent = 'center';
+  
   if (mode === 'mcq') {
     const showCorrectButton = document.createElement('button');
     showCorrectButton.textContent = 'Show Correct Answers';
@@ -551,6 +603,7 @@ function addFilterButtons() {
       currentCorrectnessFilter = 'correct';
       applyAllFilters();
     });
+    
     const showWrongButton = document.createElement('button');
     showWrongButton.textContent = 'Show Wrong Answers';
     showWrongButton.classList.add('filter-button', 'wrong');
@@ -558,6 +611,7 @@ function addFilterButtons() {
       currentCorrectnessFilter = 'wrong';
       applyAllFilters();
     });
+    
     const showUnansweredButton = document.createElement('button');
     showUnansweredButton.textContent = 'Show Unanswered Questions';
     showUnansweredButton.classList.add('filter-button', 'unanswered');
@@ -565,6 +619,7 @@ function addFilterButtons() {
       currentCorrectnessFilter = 'unanswered';
       applyAllFilters();
     });
+    
     const showAllButton = document.createElement('button');
     showAllButton.textContent = 'Show All Questions';
     showAllButton.classList.add('filter-button', 'all');
@@ -572,10 +627,12 @@ function addFilterButtons() {
       currentCorrectnessFilter = 'all';
       applyAllFilters();
     });
+    
     filterContainer.appendChild(showCorrectButton);
     filterContainer.appendChild(showWrongButton);
     filterContainer.appendChild(showUnansweredButton);
     filterContainer.appendChild(showAllButton);
+    
   } else {
     const showCorrectButton = document.createElement('button');
     showCorrectButton.textContent = 'Show Correct Answers';
@@ -584,6 +641,7 @@ function addFilterButtons() {
       currentCorrectnessFilter = 'yes';
       applyAllFilters();
     });
+    
     const showIncorrectButton = document.createElement('button');
     showIncorrectButton.textContent = 'Show Incorrect Answers';
     showIncorrectButton.classList.add('filter-button', 'no-button');
@@ -591,6 +649,7 @@ function addFilterButtons() {
       currentCorrectnessFilter = 'no';
       applyAllFilters();
     });
+    
     const showUnansweredButton = document.createElement('button');
     showUnansweredButton.textContent = 'Show Unanswered Questions';
     showUnansweredButton.classList.add('filter-button', 'unanswered-button');
@@ -598,6 +657,7 @@ function addFilterButtons() {
       currentCorrectnessFilter = 'unanswered';
       applyAllFilters();
     });
+    
     const showAllButton = document.createElement('button');
     showAllButton.textContent = 'Show All Questions';
     showAllButton.classList.add('filter-button', 'all-button');
@@ -605,11 +665,13 @@ function addFilterButtons() {
       currentCorrectnessFilter = 'all';
       applyAllFilters();
     });
+    
     filterContainer.appendChild(showCorrectButton);
     filterContainer.appendChild(showIncorrectButton);
     filterContainer.appendChild(showUnansweredButton);
     filterContainer.appendChild(showAllButton);
   }
+  
   if (resultElement) {
     resultElement.appendChild(filterContainer);
   }
@@ -620,6 +682,7 @@ function filterQuestionsCorrectness() {
   visibleIndexesAfterCategory.forEach(index => {
     const questionContainer = document.getElementById(`question-container-${index}`);
     let shouldDisplay = false;
+    
     if (mode === 'mcq') {
       const selectedOption = document.querySelector(`input[name="question-${index}"]:checked`);
       const data = quizData[index];
@@ -651,23 +714,28 @@ function filterQuestionsCorrectness() {
         shouldDisplay = true;
       }
     }
+    
     questionContainer.style.display = shouldDisplay ? 'block' : 'none';
   });
 }
 
 function applyAllFilters() {
   const selectedOptions = categoryFilterSelected || [];
+  
   quizData.forEach((data, index) => {
     const questionContainer = document.getElementById(`question-container-${index}`);
     const category = extractCategoryFromQuestion(data.question);
+    
     if (selectedOptions.length === 0 || selectedOptions.includes(category)) {
       questionContainer.style.display = 'block';
     } else {
       questionContainer.style.display = 'none';
     }
   });
+  
   filterQuestionsCorrectness();
   renumberVisibleQuestions();
+  
   const visibleCount = getVisibleQuestionIndexes().length;
   const totalQEl = document.getElementById('total-questions');
   if (totalQEl) totalQEl.textContent = visibleCount;
@@ -746,6 +814,7 @@ function closeJumpModal() {
 function displaySearchResults(results) {
   const searchResultsContainer = document.getElementById('search-results');
   if (!searchResultsContainer) return;
+  
   searchResultsContainer.innerHTML = '';
   if (results.length === 0) {
     const noResults = document.createElement('p');
@@ -776,22 +845,46 @@ function clearSearchResults() {
   }
 }
 
+/***
+ * الدالتان التاليتان للمساعدة في إزالة الوسوم و تمييز الكلمة (highlight) في النتائج
+ ***/
+function stripHTML(html) {
+  let doc = new DOMParser().parseFromString(html, 'text/html');
+  return doc.body.textContent || "";
+}
+function highlightTerm(text, term) {
+  const regex = new RegExp(term, 'gi');
+  return text.replace(regex, match => `<mark>${match}</mark>`);
+}
+
+/***
+ * هنا دالة البحث داخل الأسئلة (عدّلناها قليلاً لتشمل options + explanation)
+ ***/
 function jumpToQuestion() {
   const input = document.getElementById('jump-input').value.trim();
   if (input === '') return;
+  
   const visibleIndexes = getVisibleQuestionIndexes();
   const results = [];
   const query = input.toLowerCase();
+  
   for (let j = 0; j < visibleIndexes.length; j++) {
     const i = visibleIndexes[j];
     const data = quizData[i];
+    
     let matchFound = false;
     let snippet = "";
+    
+    // نص السؤال بدون HTML
     const questionText = stripHTML(data.question);
+    
+    // 1) البحث في نص السؤال
     if (questionText.toLowerCase().includes(query)) {
       matchFound = true;
       snippet = highlightTerm(questionText, input);
     }
+    
+    // 2) البحث في الخيارات (إذا لم نجد تطابق في نص السؤال)
     if (!matchFound && data.options && Array.isArray(data.options)) {
       for (let k = 0; k < data.options.length; k++) {
         const optionText = data.options[k];
@@ -802,6 +895,16 @@ function jumpToQuestion() {
         }
       }
     }
+
+    // ============= [السطران المضافان للبحث في الـ explanation] =============
+    // 3) البحث في حقل التفسير (إن وجد) إذا لم نجد تطابق في السؤال أو الخيارات
+    if (!matchFound && data.explanation && data.explanation.toLowerCase().includes(query)) {
+      matchFound = true;
+      snippet = highlightTerm(questionText, input) + " (Explanation: " + highlightTerm(data.explanation, input) + ")";
+    }
+    // ==========================================================================
+
+    // إذا وجدنا أي تطابق في أحد الحقول
     if (matchFound) {
       results.push({
         index: i,
@@ -809,6 +912,8 @@ function jumpToQuestion() {
       });
     }
   }
+  
+  // لو لم نجد نتائج وحاول المستخدم البحث برقم السؤال مباشرة
   if (results.length === 0 && !isNaN(input)) {
     const num = parseInt(input);
     const idx = num - 1;
@@ -819,228 +924,8 @@ function jumpToQuestion() {
       });
     }
   }
+  
   displaySearchResults(results);
-}
-
-function toggleAnswer(index) {
-  const answerDiv = document.getElementById(`answer-${index}`);
-  if (!answerDiv) return;
-  answerDiv.style.display = (answerDiv.style.display === 'block') ? 'none' : 'block';
-}
-
-function setUserAnswer(index, answer) {
-  quizData[index].userAnswer = answer;
-  lastAnsweredIndex = index;
-  updateScrollButtonIcon();
-  updateIndicator(index, answer);
-}
-
-function updateIndicator(index, answer) {
-  const indicator = document.getElementById(`indicator-${index}`);
-  if (!indicator) return;
-  indicator.innerHTML = (answer === 'yes') ? '✔️' : (answer === 'no') ? '❌' : '';
-}
-
-function clearUserAnswer(index) {
-  quizData[index].userAnswer = null;
-  const indicator = document.getElementById(`indicator-${index}`);
-  if (indicator) indicator.innerHTML = '';
-  const answerDiv = document.getElementById(`answer-${index}`);
-  if (answerDiv) answerDiv.style.display = 'none';
-}
-
-function extractCategoryFromQuestion(questionHTML) {
-  const div = document.createElement('div');
-  div.innerHTML = questionHTML;
-  const span = div.querySelector('span[style*="darkred"]');
-  if (span) {
-    let text = span.textContent.trim();
-    const questionIndex = text.toLowerCase().indexOf('question');
-    if (questionIndex !== -1) {
-      text = text.substring(0, questionIndex).trim();
-      text = text.replace(/\-\s*$/, '').trim();
-    }
-    return text;
-  }
-  return '';
-}
-
-const selectAllBtn = document.getElementById('select-all-categories-btn');
-if (selectAllBtn) {
-  selectAllBtn.addEventListener('click', () => {
-    const categorySelect = document.getElementById('category-filter');
-    if (!categorySelect) return;
-    const allSelected = Array.from(categorySelect.options).every(option => option.selected);
-    for (let i = 0; i < categorySelect.options.length; i++) {
-      categorySelect.options[i].selected = !allSelected;
-    }
-  });
-}
-
-function openCategoryModal() {
-  document.getElementById('category-modal').style.display = 'block';
-  updateCategoryFilter();
-}
-function closeCategoryModal() {
-  document.getElementById('category-modal').style.display = 'none';
-}
-function updateCategoryFilter() {
-  const categorySelect = document.getElementById('category-filter');
-  if (!categorySelect) return;
-  categorySelect.innerHTML = '';
-  originalCategories.forEach(cat => {
-    const option = document.createElement('option');
-    option.value = cat;
-    option.textContent = cat;
-    if (categoryFilterSelected.includes(cat)) {
-      option.selected = true;
-    }
-    categorySelect.appendChild(option);
-  });
-}
-function applyCategoryFilter() {
-  const categorySelect = document.getElementById('category-filter');
-  if (!categorySelect) return;
-  categoryFilterSelected = Array.from(categorySelect.selectedOptions).map(o => o.value);
-  closeCategoryModal();
-  applyAllFilters();
-}
-
-function switchMode() {
-  if (mode === 'mcq') {
-    mode = 'flashcard';
-    document.getElementById('switch-mode').textContent = 'Switch to MCQs Mode';
-    document.getElementById('shuffle-options').style.display = 'none';
-  } else {
-    mode = 'mcq';
-    document.getElementById('switch-mode').textContent = 'Switch to Flashcard Mode';
-    document.getElementById('shuffle-options').style.display = 'inline-block';
-  }
-  loadQuiz();
-  if (resultElement) resultElement.innerHTML = '';
-  currentCorrectnessFilter = 'all';
-  applyAllFilters();
-}
-
-function showAllExplanations() {
-  const visibleIndexes = getVisibleQuestionIndexes();
-  visibleIndexes.forEach(index => {
-    const explanationDiv = document.getElementById(`explanation-${index}`);
-    if (explanationDiv) {
-      explanationDiv.style.display = 'block';
-    }
-  });
-}
-
-function handleScrollButton() {
-  if (lastAnsweredIndex === -1) {
-    if (scrollState === 0 || scrollState === 2) {
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-      scrollState = 3;
-    } else if (scrollState === 3) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      scrollState = 2;
-    }
-  } else {
-    if (scrollState === 0) {
-      document.getElementById(`question-${lastAnsweredIndex}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
-      scrollState = 1;
-    } else if (scrollState === 1) {
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-      scrollState = 2;
-    } else if (scrollState === 2) {
-      document.getElementById(`question-${lastAnsweredIndex}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
-      scrollState = 3;
-    } else if (scrollState === 3) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      scrollState = 1;
-    }
-  }
-  updateScrollButtonIcon();
-}
-
-function updateScrollButtonIcon() {
-  if (!scrollButton) return;
-  if (lastAnsweredIndex === -1) {
-    if (scrollState === 0 || scrollState === 2) {
-      scrollButton.textContent = '↓';
-    } else if (scrollState === 3) {
-      scrollButton.textContent = '↑';
-    }
-  } else {
-    if (scrollState === 0) {
-      scrollButton.textContent = '⇄';
-    } else if (scrollState === 1) {
-      scrollButton.textContent = '↓';
-    } else if (scrollState === 2) {
-      scrollButton.textContent = '⇄';
-    } else if (scrollState === 3) {
-      scrollButton.textContent = '↑';
-    }
-  }
-}
-
-function resetQuiz() {
-  openResetModal();
-}
-
-function openResetModal() {
-  document.getElementById('reset-modal').style.display = 'block';
-}
-
-function closeResetModal() {
-  document.getElementById('reset-modal').style.display = 'none';
-}
-
-function confirmResetQuiz() {
-  quizData = JSON.parse(JSON.stringify(originalQuizData));
-  loadQuiz();
-  requestAnimationFrame(() => {
-    if (resultElement) resultElement.innerHTML = '';
-    scrollState = 0;
-    lastAnsweredIndex = -1;
-    updateScrollButtonIcon();
-    currentCorrectnessFilter = 'all';
-    categoryFilterSelected = [];
-    applyAllFilters();
-    closeResetModal();
-  });
-}
-
-function openJumpModal() {
-  document.getElementById('jump-modal').style.display = 'block';
-  document.getElementById('jump-input').focus();
-}
-
-function closeJumpModal() {
-  document.getElementById('jump-modal').style.display = 'none';
-  clearSearchResults();
-}
-
-function displaySearchResults(results) {
-  const searchResultsContainer = document.getElementById('search-results');
-  if (!searchResultsContainer) return;
-  searchResultsContainer.innerHTML = '';
-  if (results.length === 0) {
-    const noResults = document.createElement('p');
-    noResults.textContent = 'No matching questions found.';
-    searchResultsContainer.appendChild(noResults);
-  } else {
-    const resultsList = document.createElement('ul');
-    results.forEach(result => {
-      const listItem = document.createElement('li');
-      const resultButton = document.createElement('button');
-      resultButton.innerHTML = `Question ${result.index + 1}: ${result.questionSnippet}`;
-      resultButton.addEventListener('click', () => {
-        document.getElementById(`question-${result.index}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
-        closeJumpModal();
-      });
-      listItem.appendChild(resultButton);
-      resultsList.appendChild(listItem);
-    });
-    searchResultsContainer.appendChild(resultsList);
-    MathJax.typesetPromise([searchResultsContainer]).catch(err => console.error(err));
-  }
 }
 
 /***
@@ -1147,4 +1032,129 @@ function downloadPDF() {
   });
   
   doc.save(`${fullQuizTitle}.pdf`);
+}
+
+/***
+ * الدوال التالية (للسكروول) باقية كما هي
+ ***/
+function showAllExplanations() {
+  const visibleIndexes = getVisibleQuestionIndexes();
+  visibleIndexes.forEach(index => {
+    const explanationDiv = document.getElementById(`explanation-${index}`);
+    if (explanationDiv) {
+      explanationDiv.style.display = 'block';
+    }
+  });
+}
+
+function handleScrollButton() {
+  if (lastAnsweredIndex === -1) {
+    if (scrollState === 0 || scrollState === 2) {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      scrollState = 3;
+    } else if (scrollState === 3) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollState = 2;
+    }
+  } else {
+    if (scrollState === 0) {
+      document.getElementById(`question-${lastAnsweredIndex}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
+      scrollState = 1;
+    } else if (scrollState === 1) {
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      scrollState = 2;
+    } else if (scrollState === 2) {
+      document.getElementById(`question-${lastAnsweredIndex}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
+      scrollState = 3;
+    } else if (scrollState === 3) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      scrollState = 1;
+    }
+  }
+  updateScrollButtonIcon();
+}
+
+function updateScrollButtonIcon() {
+  if (!scrollButton) return;
+  if (lastAnsweredIndex === -1) {
+    if (scrollState === 0 || scrollState === 2) {
+      scrollButton.textContent = '↓';
+    } else if (scrollState === 3) {
+      scrollButton.textContent = '↑';
+    }
+  } else {
+    if (scrollState === 0) {
+      scrollButton.textContent = '⇄';
+    } else if (scrollState === 1) {
+      scrollButton.textContent = '↓';
+    } else if (scrollState === 2) {
+      scrollButton.textContent = '⇄';
+    } else if (scrollState === 3) {
+      scrollButton.textContent = '↑';
+    }
+  }
+}
+
+function resetQuiz() {
+  openResetModal();
+}
+
+function openResetModal() {
+  document.getElementById('reset-modal').style.display = 'block';
+}
+
+function closeResetModal() {
+  document.getElementById('reset-modal').style.display = 'none';
+}
+
+function confirmResetQuiz() {
+  quizData = JSON.parse(JSON.stringify(originalQuizData));
+  loadQuiz();
+  requestAnimationFrame(() => {
+    if (resultElement) resultElement.innerHTML = '';
+    scrollState = 0;
+    lastAnsweredIndex = -1;
+    updateScrollButtonIcon();
+    currentCorrectnessFilter = 'all';
+    categoryFilterSelected = [];
+    applyAllFilters();
+    closeResetModal();
+  });
+}
+
+function openJumpModal() {
+  document.getElementById('jump-modal').style.display = 'block';
+  document.getElementById('jump-input').focus();
+}
+
+function closeJumpModal() {
+  document.getElementById('jump-modal').style.display = 'none';
+  clearSearchResults();
+}
+
+function displaySearchResults(results) {
+  const searchResultsContainer = document.getElementById('search-results');
+  if (!searchResultsContainer) return;
+  
+  searchResultsContainer.innerHTML = '';
+  if (results.length === 0) {
+    const noResults = document.createElement('p');
+    noResults.textContent = 'No matching questions found.';
+    searchResultsContainer.appendChild(noResults);
+  } else {
+    const resultsList = document.createElement('ul');
+    results.forEach(result => {
+      const listItem = document.createElement('li');
+      const resultButton = document.createElement('button');
+      resultButton.innerHTML = `Question ${result.index + 1}: ${result.questionSnippet}`;
+      resultButton.addEventListener('click', () => {
+        document.getElementById(`question-${result.index}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
+        closeJumpModal();
+      });
+      listItem.appendChild(resultButton);
+      resultsList.appendChild(listItem);
+    });
+    searchResultsContainer.appendChild(resultsList);
+    MathJax.typesetPromise([searchResultsContainer]).catch(err => console.error(err));
+  }
 }
