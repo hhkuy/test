@@ -648,9 +648,6 @@
       margin: 0 5px;
     }
 
-    /*==========================================*/
-    /*         إضافة شيفرة خاصة بالطباعة       */
-    /*==========================================*/
     @media print {
       /* إجبار المتصفح على الحفاظ على الألوان والخلفيات */
       * {
@@ -685,7 +682,7 @@
       <button onclick="manualSearchTopics()">Search</button>
     </div>
     <div class="topics-grid" id="topics-grid">
-      <!-- مثال على بطاقة موضوع مع المحاذاة المطلوبة -->
+      <!-- مثال على بطاقة موضوع -->
       <div class="topic-card">
         <div class="topic-header">
           <h2 class="topic-title">عنوان الموضوع الأطول هنا</h2>
@@ -699,11 +696,11 @@
           </div>
         </div>
       </div>
-      <!-- يمكن إضافة المزيد من البطاقات بنفس النمط -->
+      <!-- المزيد من البطاقات ... -->
     </div>
   </div>
 
-  <!-- حاوية الكويز (مخفية في البداية) -->
+  <!-- حاوية الكويز -->
   <div class="quiz-container" id="quiz-container">
     <button id="back-to-topics" type="button" onclick="goBackToTopics()">← Back to Topics</button>
     <button id="download-pdf" type="button" onclick="downloadPDF()">Download PDF</button>
@@ -723,7 +720,7 @@
     <div id="result"></div>
   </div>
 
-  <!-- الأزرار العائمة (تظهر فقط عند الدخول للكويز) -->
+  <!-- الأزرار العائمة (للكويز) -->
   <div class="floating-button-container" id="floating-buttons">
     <button id="scroll-button" class="floating-button" onclick="handleScrollButton()" title="Scroll between answered and bottom">↓</button>
     <button id="jump-button" class="floating-button" onclick="openJumpModal()" title="Search Questions">🔍</button>
@@ -738,7 +735,7 @@
     </div>
   </div>
 
-  <!-- مودال البحث (Jump) للبحث داخل الأسئلة -->
+  <!-- مودال البحث (Jump) -->
   <div id="jump-modal" class="modal">
     <div class="modal-content">
       <p>Search in currently displayed questions:</p>
@@ -762,7 +759,7 @@
     </div>
   </div>
 
-  <!-- ربط ملف الجافاسكربت الرئيسي -->
+  <!-- ملف الجافاسكربت الأساسي -->
   <script src="js/main.js"></script>
 
   <!-- بعد تحميل main.js نترك MathJax يقوم بمعالجة المعادلات تلقائيًا -->
